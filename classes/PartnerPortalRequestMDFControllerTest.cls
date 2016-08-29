@@ -16,7 +16,7 @@ private class PartnerPortalRequestMDFControllerTest
         insert testContact;
 
         Test.startTest();
-        Profile spPortalProfile = [select Id from Profile where Name = '13a-SP Partner Portal Login'];
+        Profile spPortalProfile = [select Id from Profile where Name = '13g-SP Partner Community'];
         createTestPortalUser('acme', 'acme@silver-peak.example', testContact.Id, spPortalProfile.Id);
         Test.stopTest();
         

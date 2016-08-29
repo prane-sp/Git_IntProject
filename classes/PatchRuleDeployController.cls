@@ -100,7 +100,7 @@ public class PatchRuleDeployController
                 deployOptions.purgeOnDelete = false;
                 deployOptions.rollbackOnError = true;
                 deployOptions.runAllTests = false;
-                deployOptions.runTests = null;
+                deployOptions.runTests = null; //new List<String> { 'PatchRuleEngineTest' };
                 deployOptions.singlePackage = true;     
                 AsyncResult = service.deploy(ZipData, DeployOptions);
             }

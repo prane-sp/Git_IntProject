@@ -220,8 +220,8 @@ public class RegisterAccountController
                 }
                 if(similarDomains.contains(acct.Email_Domain_Used__c))
                 {
-                    errorMessage += ';:Email Domains Used - Please use the domain of your business email address. If you’ve reached this message in error, please email us at channel@silver-peak.com.';
-                    acct.Email_Domain_Used__c.addError('Please use the domain of your business email address. If you’ve reached this message in error, please email us at channel@silver-peak.com.');
+                    errorMessage += ';:Email Domains Used - Please use the domain of your business email address. If your company is a registered partner, please request a login at the login page. If you have any question, please email us at channel@silver-peak.com.';
+                    acct.Email_Domain_Used__c.addError('Please use the domain of your business email address. If your company is a registered partner, please request a login at the login page. If you have any question, please email us at channel@silver-peak.com.');
                     isPass = false;
                 }
             }

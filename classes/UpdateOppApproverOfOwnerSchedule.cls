@@ -60,6 +60,7 @@ global class UpdateOppApproverOfOwnerSchedule implements Database.Batchable<sObj
     @isTest
     static void testBatch()
     {
+         Test.startTest();
         List<Opportunity> oppList = new List<Opportunity>();
         Map<String, String> userMapTest = new Map<String, String>();
         Account acc = new Account(name = 'acc1');       
@@ -70,7 +71,7 @@ global class UpdateOppApproverOfOwnerSchedule implements Database.Batchable<sObj
         system.debug('###' + userStandt.Quote_Approver__c + '##' + userApprover.Id );
         update userStandt;
         userMapTest.put(userStandt.Id, userStandt.Quote_Approver__c);
-        for(Integer i = 0; i < 200; i++)
+        for(Integer i = 0; i < 10; i++)
         {
             Opportunity opp = new Opportunity(); 
             opp.Name = 'opp' + i;
@@ -86,14 +87,14 @@ global class UpdateOppApproverOfOwnerSchedule implements Database.Batchable<sObj
         }       
         insert oppList;
         
-        Test.startTest();
+       
         UpdateOppApproverOfOwnerSchedule oppBatch = new UpdateOppApproverOfOwnerSchedule();
-        oppBatch.query = 'Select Id, OwnerId, QuoteApproverOfOwner__c from Opportunity Where IsClosed = false and OwnerId =  \'' + userStandt.Id +'\' limit 200';
+        oppBatch.query = 'Select Id, OwnerId, QuoteApproverOfOwner__c from Opportunity Where IsClosed = false and OwnerId =  \'' + userStandt.Id +'\' limit 10';
         oppBatch.userMap = userMapTest;
         Database.executeBatch(oppBatch); 
         Test.stopTest();
         
-        system.assertEquals(database.countquery('Select count() from Opportunity where QuoteApproverOfOwner__c = \'' + userApprover.Id + '\''), 200);
+        system.assertEquals(database.countquery('Select count() from Opportunity where QuoteApproverOfOwner__c = \'' + userApprover.Id + '\''), 10);
     } 
     
     @isTest

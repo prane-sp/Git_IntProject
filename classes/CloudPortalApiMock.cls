@@ -37,7 +37,10 @@ public class CloudPortalApiMock implements HttpCalloutMock {
         {
             res.setBody('{"accounts":[{"salesforceId":"001W000000LN3hQ","id":"123666669889","name":"acme_test","accountkey":"aed873823iui887"}]}');
         }
-       
+        if(req.getEndpoint().indexOf('/salesforce/account?modifiedTime') > 0)
+        {
+            res.setBody('{"accounts":[{"salesforceId":"001W000000LN3tQ","id":"123666669889","name":"acme_test_updated","accountkey":"aed873823iui899"}]}');
+        }
         if(req.getEndpoint().indexOf('/login') > 0)
         {
             res.setBody('{"Value":"test123"}');

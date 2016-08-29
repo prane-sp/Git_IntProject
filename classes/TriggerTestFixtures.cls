@@ -952,13 +952,14 @@ public class TriggerTestFixtures
         insert request;
         
         request.Approval_Status__c = 'Approved';
+        request.Approval_Status_Hidden__c = 'Approved';
         update request;
     }
     
     @isTest
     static void testAddPowerPartnerToPublicGroups()
     {
-        List<Profile> profiles = [select Id from Profile where Name='13a-SP Partner Portal Login' limit 1];
+        List<Profile> profiles = [select Id from Profile where Name='13g-SP Partner Community' limit 1];
         Account acc = new Account(Name='acme', GEO_Supported__c='All');
         insert acc;
         Contact ct = new Contact(LastName='acme', AccountId=acc.Id);

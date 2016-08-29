@@ -11,7 +11,7 @@ public with sharing class PartnerPortalSSOController
 
     public PageReference redirect()
     {
-        if(ProfileValid)
+        /*if(ProfileValid)
         {
             String ssoRequest = ApexPages.currentPage().getParameters().get('SSORequest');
             if(String.isNotBlank(ssoRequest))
@@ -26,14 +26,17 @@ public with sharing class PartnerPortalSSOController
         else
         {
             return null;
-        }
+        }*/
+        
+        return null;
     }
     
     private PageReference ssoLoginTry()
     {
         if(UserInfo.getUserType() == 'PowerPartner')
         {
-            String url = PartnerPortalSSOStub.getSSOLink(UserInfo.getUserId());
+            String url = HPartnerPortalSSOStub.getSSOLink(UserInfo.getUserId());
+            System.debug('url'+url);           
             return new PageReference(url);
         }
         else
@@ -45,8 +48,9 @@ public with sharing class PartnerPortalSSOController
     
     private PageReference ssoLoginCofirm()
     {
+        
         String ssoRequest = ApexPages.currentPage().getParameters().get('SSORequest');
-        String ssoResponse = PartnerPortalSSOStub.md5Hash(ssoRequest);
-        return new PageReference('http://training.silver-peak.com/get.ashx?method=sso&SSOResponse=' + ssoResponse);
+        String ssoResponse = HPartnerPortalSSOStub.md5Hash(ssoRequest);
+        return new PageReference('https://training.silver-peak.com/get.ashx?method=sso&SSOResponse=' + ssoResponse);
     }
 }

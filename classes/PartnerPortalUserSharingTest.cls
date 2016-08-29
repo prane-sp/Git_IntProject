@@ -9,7 +9,7 @@ public class PartnerPortalUserSharingTest
         Contact ct = new Contact(AccountId=partner.Id, LastName='acme', Email='test@test.com');
         insert ct;
         
-        Profile profile = [select Id from Profile where Name='13a-SP Partner Portal Login' limit 1];
+        Profile profile = [select Id from Profile where Name='13g-SP Partner Community' limit 1];
         User usr = new User(FirstName='acme', LastName='acme', Email='test@test.com', Username='test@test.com.pptest', ProfileId=profile.Id, ContactId=ct.Id, Alias='test', TimeZoneSidKey='America/Los_Angeles', LocaleSidKey='en_US', EmailEncodingKey='ISO-8859-1', LanguageLocaleKey='en_US');
         insert usr;
         

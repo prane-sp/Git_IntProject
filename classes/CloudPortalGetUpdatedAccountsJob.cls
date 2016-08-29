@@ -34,7 +34,7 @@ public class CloudPortalGetUpdatedAccountsJob implements  Schedulable, Database.
             {
                 if(acc.salesforceId!=null)
                 {
-                    lstAccountsToUpdate.add(new Account(Id=acc.salesforceId,Cloud_Portal_Account_Key__c=acc.accountKey,Cloud_Portal_Account_Name__c=acc.name));
+                    lstAccountsToUpdate.add(new Account(Id=acc.salesforceId,Cloud_Portal_Account_Name__c=acc.name));
                 }
                 
             }

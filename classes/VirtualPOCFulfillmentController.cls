@@ -10,11 +10,11 @@ public class VirtualPOCFulfillmentController
     
     public VirtualPOCFulfillmentController(ApexPages.StandardController controller)
     {
-        List<Request__c> requests = [select Id, Opportunity__c, Opportunity__r.AccountId,POC_Type__c, POC_Contact__c, GMS_Needed__c, EvaluationProductHypervisor__c, Evaluation_Product_1__c, Evaluation_Product_2__c, Quantity_Location_1__c, Quantity_Location_2__c, Status__c, Actual_Ship_Date__c, Target_End_Date__c, VirtualProduct1__c, VirtualProduct2__c, VirtualProduct3__c, VirtualProduct4__c, VirtualProduct5__c, VirtualQuantity1__c, VirtualQuantity2__c, VirtualQuantity3__c, VirtualQuantity4__c, VirtualQuantity5__c from Request__c where Id = :controller.getId()];        
+        List<Request__c> requests = [select Id, Opportunity__c,Opportunity__r.Account.Partner_Type__c,Opportunity__r.Account.ECSP__c, Opportunity__r.AccountId,POC_Type__c, POC_Contact__c, GMS_Needed__c, EvaluationProductHypervisor__c, Evaluation_Product_1__c, Evaluation_Product_2__c, Quantity_Location_1__c, Quantity_Location_2__c, Status__c, Actual_Ship_Date__c, Target_End_Date__c, VirtualProduct1__c, VirtualProduct2__c, VirtualProduct3__c, VirtualProduct4__c, VirtualProduct5__c, VirtualQuantity1__c, VirtualQuantity2__c, VirtualQuantity3__c, VirtualQuantity4__c, VirtualQuantity5__c from Request__c where Id = :controller.getId()];        
         if(!requests.isEmpty())
         {
             pocRequest = requests[0];
-            if(pocRequest.POC_Type__c=='Service Provider')
+            if(pocRequest.Opportunity__r.Account.Partner_Type__c=='Service Provider' && pocRequest.Opportunity__r.Account.ECSP__c)
             {
                 LicenseDurationDays=90;
             }
@@ -300,7 +300,7 @@ productName= prd.Name;
             List<EmailTemplate> template = [select Id from EmailTemplate where Name=:'EdgeConnect POC Virtual Fulfillment Email' limit 1];
             if(template.size() > 0)
             {
-                List<String> ccs = getAccountTeam(pocRequest.Opportunity__r.AccountId);
+                List<String> ccs = getPOCRecipients(pocRequest.Id);
                 ccs.add('notifications@silver-peak.com');
                 Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
                 email.setTemplateId(template[0].Id);
@@ -325,7 +325,7 @@ productName= prd.Name;
         }
         
     }
-     private void SendFulfillmentEmailForServiceProviders()
+    private void SendFulfillmentEmailForServiceProviders()
     {
         
         if(pocRequest!=null && pocRequest.POC_Type__c=='Service Provider')
@@ -333,7 +333,7 @@ productName= prd.Name;
             List<EmailTemplate> template = [select Id from EmailTemplate where Name=:'EC POC SP Virtual Fulfillment Email' limit 1];
             if(template.size() > 0)
             {
-                List<String> ccs = getAccountTeam(pocRequest.Opportunity__r.AccountId);
+                List<String> ccs = getPOCRecipients(pocRequest.Id);
                 ccs.add('notifications@silver-peak.com');
                 Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
                 email.setTemplateId(template[0].Id);
@@ -366,6 +366,52 @@ productName= prd.Name;
         {
             emails.add(atm.User.Email);
         }
+        return emails;
+    }
+    private List<String> getPOCRecipients(Id pocId)
+    {
+        List<Request__c> members = [select Id, SE__r.Email,SE_Manager__r.Email,RSM_Manager__r.Email,RSM__r.Email,CC_List_1__c,CC_List_2__c,CC_List_3__c,CC_List_4__c,CC_List_5__c from Request__c where Id=:pocId];
+        List<String> emails = new List<String>();
+        if(members!=null && members.size()>0)
+        {
+            if(members[0].SE__r.Email!=null)
+            {
+                emails.add(members[0].SE__r.Email);
+            }
+            if(members[0].SE_Manager__r.Email!=null)
+            {
+                emails.add(members[0].SE_Manager__r.Email);
+            }
+            if(members[0].RSM_Manager__r.Email!=null)
+            {
+                emails.add(members[0].RSM_Manager__r.Email);
+            }
+            if(members[0].RSM__r.Email!=null)
+            {
+                emails.add(members[0].RSM__r.Email);
+            }
+            if(members[0].CC_List_1__c!=null)
+            {
+                emails.add(members[0].CC_List_1__c);
+            }
+            if(members[0].CC_List_2__c!=null)
+            {
+                emails.add(members[0].CC_List_1__c);
+            }
+            if(members[0].CC_List_3__c!=null)
+            {
+                emails.add(members[0].CC_List_3__c);
+            }
+            if(members[0].CC_List_4__c!=null)
+            {
+                emails.add(members[0].CC_List_4__c);
+            }
+            if(members[0].CC_List_5__c!=null)
+            {
+                emails.add(members[0].CC_List_5__c);
+            }
+        }
+        
         return emails;
     }
     //gets product with the specified name, if non found, match by model, if more than 1 found, return the one with shortest product code (subscription product has longer code)

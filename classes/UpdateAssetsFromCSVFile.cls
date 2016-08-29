@@ -18,6 +18,13 @@ global class UpdateAssetsFromCSVFile implements Messaging.InboundEmailHandler
                 String csvFile = binaryAtt.Body.toString();
                 List<Asset> updatedAssets = parseCSVFile(csvFile);
                 update updatedAssets;
+                Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+                mail.setSubject('Silver Peak Customer Portal:Asset List successfully updated.');
+                mail.setPlainTextBody('Your Asset List is updated successfully.\r\n\r\n');
+                mail.setReplyTo('noreply@silver-peak.com');
+                mail.setToAddresses(new String[] {email.fromAddress});
+                Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+                
             } catch (Exception ex) {
                 result.success = false;
                 result.message = '\nOne or more Asset ID cannot be found. Please make sure you didn\'t update asset IDs. \r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString();
@@ -28,7 +35,7 @@ global class UpdateAssetsFromCSVFile implements Messaging.InboundEmailHandler
         result.success = true;
         return result;  
     }
-
+    
     private List<Asset> parseCSVFile(String csvFile)
     {
         String [] rows = csvFile.split('\\n');
@@ -74,7 +81,7 @@ global class UpdateAssetsFromCSVFile implements Messaging.InboundEmailHandler
         }
         return updatedAssets;
     }
-
+    
     private sObject validateFieldValue(sObject obj, String value, Schema.SObjectField objectField)
     {
         Schema.DescribeFieldResult fieldResult = objectField != null ? objectField.getDescribe() : null;

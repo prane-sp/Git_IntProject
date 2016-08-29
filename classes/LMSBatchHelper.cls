@@ -26,9 +26,6 @@ public class LMSBatchHelper {
             }
         }
     }
-    
-    
-    
     public static void AssociateContactwithEachCertUsingStudentId()
     {
         // select all certificates where contact is null
@@ -57,7 +54,7 @@ public class LMSBatchHelper {
                     item.Learner_Contact__c= mapContact.get(string.valueOf(item.Student_Id__c));
                     if(item.Student_Email__c==null)
                     {
-                    	item.Student_Email__c= mapContactEmail.get(string.valueOf(item.Student_Id__c));
+                        item.Student_Email__c= mapContactEmail.get(string.valueOf(item.Student_Id__c));
                     }
                     lstCertToUpdate.add(item);
                 }
@@ -122,5 +119,151 @@ public class LMSBatchHelper {
         
     }
     
+    public static void H_InsertCertificationData(Map<Id,List<HPartnerPortalCertificate>> mapCertificates )
+    {
+        List<LMS_Course_Certification__c> lstCertToInsert= new List<LMS_Course_Certification__c>();
+        if(mapCertificates!=null && mapCertificates.size()>0)
+        {
+            for(Id courseId:mapCertificates.keySet())
+            {
+                List<HPartnerPortalCertificate> lstCerts = mapCertificates.get(courseId);
+                for(HPartnerPortalCertificate cert:lstCerts)
+                {
+                    LMS_Course_Certification__c sfCertData= new LMS_Course_Certification__c();
+                    sfCertData.Certification_ID__c= cert.Id;
+                    sfCertData.Course_Id__c= cert.courseId;
+                    sfCertData.LMS_Course_Id__c= courseId;
+                    sfCertData.Expiry_Date__c=Date.valueOf(cert.ExpiryDate);
+                    sfCertData.Acquired_Date__c=Date.valueOf(cert.AcquiredDate);
+                    sfCertData.Enrollment_Id__c=cert.EnrollmentId;
+                    string statusDisp='';
+                    if(sfCertData.Expiry_Date__c==null)
+                    {
+                        statusDisp='Active';
+                    }
+                    else if(sfCertData.Expiry_Date__c<Date.today())
+                    {
+                        statusDisp='Expired';
+                    }
+                    else
+                    {  
+                        statusDisp='Active';
+                    }
+                    sfCertData.Status_Display_Name__c=statusDisp;
+                    lstCertToInsert.add(sfCertData);
+                }
+            }
+            
+            if(lstCertToInsert.size()>0)
+            {
+                insert lstCertToInsert;
+            }
+        }
+    }
     
+    
+    public static void H_AssociateContactUsingUserId()
+    {
+        List<LMS_Course_Certification__c> lstCertsToUpdate= new List<LMS_Course_Certification__c>();
+        List<LMS_Course_Certification__c> lstCerts= new List<LMS_Course_Certification__c>();
+        lstCerts=[Select Id,LMS_User_Id__c from  LMS_Course_Certification__c where LMS_User_Id__c!=null and Learner_Contact__c=null];
+        Set<string> setUserId= new Set<String>();
+        Map<string,Contact> mapUsrInfo=new  Map<string,Contact>();
+        if(lstCerts.size()>0)
+        {
+            for(LMS_Course_Certification__c item:lstCerts)
+            {
+                setUserId.add(item.LMS_User_Id__c);
+            }
+            List<Contact> lstContact=[Select Id,LMS_User_Id__c,AccountId from Contact where LMS_User_Id__c in:setUserId];
+            if(lstContact!=null && lstContact.size()>0)
+            {
+                for(Contact item:lstContact)
+                {
+                    mapUsrInfo.put(item.LMS_User_Id__c,item);
+                }
+            }
+            
+            for(LMS_Course_Certification__c item:lstCerts)
+            {
+                if(mapUsrInfo!=null && mapUsrInfo.size()>0)
+                {
+                    Contact con= mapUsrInfo.get(item.Lms_User_Id__c);
+                    if(con!=null)
+                    {
+                        item.Learner_Contact__c=con.Id;
+                        item.Learner_Account__c=con.AccountId;
+                        lstCertsToUpdate.add(item);
+                    }
+                }
+                
+                
+            }
+            if(lstCertsToUpdate.size()>0)
+            {
+                update lstCertsToUpdate;
+            }
+            
+        }
+        
+    }
+    
+    public static void H_AssociateContactUsingEmailAddress()
+    {
+        List<LMS_Course_Certification__c> lstCertsToUpdate= new List<LMS_Course_Certification__c>();
+        List<Contact> lstContactsToUpdate= new List<Contact>();
+        List<LMS_Course_Certification__c> lstCerts= new List<LMS_Course_Certification__c>();
+        Set<Contact> setContacts = new  Set<Contact> ();
+        lstCerts=[Select Id,LMS_User_Id__c,Student_Email__c from  LMS_Course_Certification__c where Student_Email__c!=null and Learner_Contact__c=null];
+        Set<string> setUserEmail= new Set<String>();
+        Map<string,Contact> mapUsrInfo=new  Map<string,Contact>();
+        if(lstCerts.size()>0)
+        {
+            for(LMS_Course_Certification__c item:lstCerts)
+            {
+                setUserEmail.add(item.Student_Email__c);
+            }
+            List<Contact> lstContact=[Select Id,LMS_User_Id__c,AccountId,Email from Contact where Email in:setUserEmail];
+            if(lstContact!=null && lstContact.size()>0)
+            {
+                for(Contact item:lstContact)
+                {
+                    if(!mapUsrInfo.containsKey(item.Email))
+                    {
+                         mapUsrInfo.put(item.Email,item);
+                    }
+                   
+                }
+                
+              for(LMS_Course_Certification__c item:lstCerts)
+                {
+                    Contact con= mapUsrInfo.get(item.Student_Email__c);
+                    if(con!=null)
+                    {
+                        item.Learner_Contact__c=con.Id;
+                        item.Learner_Account__c=con.AccountId;
+                        lstCertsToUpdate.add(item);
+                        con.LMS_User_Id__c=item.LMS_User_Id__c;
+                        if(!setContacts.contains(con))
+                        {
+                             setContacts.add(con);
+                        }
+                       
+                    }
+                    
+                }
+                if(lstCertsToUpdate.size()>0)
+                {
+                    update lstCertsToUpdate;
+                }
+                
+                if(setContacts.size()>0)
+                {
+                    lstContactsToUpdate.addAll(setContacts);
+                    update lstContactsToUpdate;
+                }
+            }
+        }
+        
+    }
 }

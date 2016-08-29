@@ -18,7 +18,7 @@ public class SendShipmentFulfilmentEmailTest
     @isTest
     static void test_EC_Renewal()
     {
-     	Account testAccount = new Account(Name='acme');
+        Account testAccount = new Account(Name='acme');
         insert testAccount;
         Opportunity testOpp = new Opportunity(Name='acme', CloseDate=Date.today(), StageName='Open', ForecastCategoryName ='Pipeline', AccountId=testAccount.Id);
         insert testOpp;
@@ -33,6 +33,7 @@ public class SendShipmentFulfilmentEmailTest
         
         PageReference pageRef = new PageReference('/apex/NewVirtualShipment?poId=' + testPO.Id);
         Test.setCurrentPage(pageRef);
+        Test.startTest();
         ApexPages.StandardController stdController = new ApexPages.StandardController(testShipment);
         NewVirtualShipmentController controller = new NewVirtualShipmentController(stdController);
         controller.TempAsset.ContactId = testContact.Id;
@@ -45,8 +46,9 @@ public class SendShipmentFulfilmentEmailTest
         
         ApexPages.currentPage().getParameters().put('rowIndex', '1');
         controller.removeLine();
-               
+        
         controller.save();
+        Test.stopTest();
         System.assert(testShipment.Id != null);
         System.assertEquals(1, [SELECT count() FROM Shipped_Line__c WHERE Shipment_Id__c = :testShipment.Id]);
         
@@ -55,13 +57,11 @@ public class SendShipmentFulfilmentEmailTest
         
     }
     
-    @isTest
     static void test_EC_Addon()
     {
-        Test.startTest();
-     	Account testAccount = new Account(Name='acme');
+        Account testAccount = new Account(Name='acme');
         insert testAccount;
-        Opportunity testOpp = new Opportunity(Name='acme', CloseDate=Date.today(), StageName='Open', ForecastCategoryName ='Pipeline', AccountId=testAccount.Id);
+        Opportunity testOpp = new Opportunity(Name='acme', CloseDate=Date.today(), StageName='Discovery', ForecastCategoryName ='Pipeline', AccountId=testAccount.Id);
         insert testOpp;
         Product2 testProduct = new Product2(Name='EC-BASE-1Y',Product_Category__c='Virtual Image', Forecast_Category__c = 'Virtual', Family='Virtual Image', IsActive=true);
         insert testProduct;
@@ -69,7 +69,7 @@ public class SendShipmentFulfilmentEmailTest
         insert testContact;
         Purchase_Order__c testPO = new Purchase_Order__c(Name = 'acme', Email_Contact__c=testContact.Id, Opportunity__c=testOpp.Id);
         insert testPO;
-        
+Test.startTest();        
         Shipment__c testShipment = new Shipment__c();  
         
         PageReference pageRef = new PageReference('/apex/NewVirtualShipment?poId=' + testPO.Id);
@@ -86,18 +86,17 @@ public class SendShipmentFulfilmentEmailTest
         
         ApexPages.currentPage().getParameters().put('rowIndex', '1');
         controller.removeLine();
-               
+        
         controller.save();
         System.assert(testShipment.Id != null);
         System.assertEquals(1, [SELECT count() FROM Shipped_Line__c WHERE Shipment_Id__c = :testShipment.Id]);
         
         SendShipmentFulfilmentEmailController sendShipmentFulfilmentEmailcontroller = new SendShipmentFulfilmentEmailController(new ApexPages.StandardController(testShipment));
         sendShipmentFulfilmentEmailcontroller.send();
-                Test.stopTest();
-
+        
         testShipment = new Shipment__c();  
         
-         pageRef = new PageReference('/apex/NewVirtualShipment?poId=' + testPO.Id);
+        pageRef = new PageReference('/apex/NewVirtualShipment?poId=' + testPO.Id);
         Test.setCurrentPage(pageRef);
         stdController = new ApexPages.StandardController(testShipment);
         controller = new NewVirtualShipmentController(stdController);
@@ -111,13 +110,15 @@ public class SendShipmentFulfilmentEmailTest
         
         ApexPages.currentPage().getParameters().put('rowIndex', '1');
         controller.removeLine();
-               
         controller.save();
+                       
         System.assert(testShipment.Id != null);
         System.assertEquals(1, [SELECT count() FROM Shipped_Line__c WHERE Shipment_Id__c = :testShipment.Id]);
-        
-         sendShipmentFulfilmentEmailcontroller = new SendShipmentFulfilmentEmailController(new ApexPages.StandardController(testShipment));
+        sendShipmentFulfilmentEmailcontroller = new SendShipmentFulfilmentEmailController(new ApexPages.StandardController(testShipment));
         sendShipmentFulfilmentEmailcontroller.send();
+         Test.stopTest();
+
+
     }
-     
+    
 }

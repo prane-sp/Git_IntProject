@@ -24,6 +24,7 @@ public class TestSendWanOPPOCFulfillmentEmail {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.Product_Type__c='Both';
         opportunity.Solution_Type__c='Replication Acceleration';
+        opportunity.Technical_Responsible__c=UserInfo.getUserId();
         insert opportunity;
         
         Request__c pocRequest = new Request__c();
@@ -37,7 +38,7 @@ public class TestSendWanOPPOCFulfillmentEmail {
         //pocRequest.Quantity_Location_2__c = 1;
         insert pocRequest;
         
-        
+        Test.startTest();
         ApexPages.StandardController sc = new ApexPages.StandardController(pocRequest);
         VirtualPOCFulfillmentController controller = new VirtualPOCFulfillmentController(sc);
         
@@ -50,14 +51,14 @@ public class TestSendWanOPPOCFulfillmentEmail {
             controller.removeAsset();
         }
         controller.save();
-        Test.startTest();
+        
         pocRequest.Send_Email__c=true;
         update pocRequest;
         Test.stopTest();
         //controller.saveAssets();
         //controller.setLicenseEncryption();
     }
-      @isTest(SeeAllData=true)
+    @isTest(SeeAllData=true)
     static void testVirtualPOCFulfillmentController_VRX()
     {
         Account account = new Account(Name = 'acme');
@@ -81,6 +82,7 @@ public class TestSendWanOPPOCFulfillmentEmail {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.Product_Type__c='Both';
         opportunity.Solution_Type__c='Replication Acceleration';
+        opportunity.Technical_Responsible__c=UserInfo.getUserId();
         insert opportunity;
         
         Request__c pocRequest = new Request__c();
@@ -94,7 +96,7 @@ public class TestSendWanOPPOCFulfillmentEmail {
         //pocRequest.Quantity_Location_2__c = 1;
         insert pocRequest;
         
-        
+        Test.startTest();
         ApexPages.StandardController sc = new ApexPages.StandardController(pocRequest);
         VirtualPOCFulfillmentController controller = new VirtualPOCFulfillmentController(sc);
         
@@ -107,7 +109,7 @@ public class TestSendWanOPPOCFulfillmentEmail {
             controller.removeAsset();
         }
         controller.save();
-        Test.startTest();
+        
         pocRequest.Send_Email__c=true;
         update pocRequest;
         Test.stopTest();

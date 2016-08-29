@@ -51,7 +51,7 @@ public class ECSubscriptionExpirationReminderJob implements Schedulable, Databas
             {
                 contactsT0.add(asset.ContactId);
                 accountsT0.add(asset.AccountId);
-                lstExpiredAssets.add(new Asset(Id= asset.Id,Status='Customer Subscription Expired'));
+                lstExpiredAssets.add(new Asset(Id= asset.Id,Status='Customer Subscription Expired',Licenses_Nodes__c=0,Bandwidth_Nodes__c=0));
             }
             else if(asset.License_End_Date__c == Date.today().adddays(30))
             {

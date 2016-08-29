@@ -4,23 +4,32 @@ public class TestPOCRenewalAssetsController {
     @IsTest(SeeAllData=True)
     public static void TestPocRenewalAssets_EdgeConnect()
     {
+        Test.startTest();
         Account acc = new Account(Name='testECPOC');
         insert acc;
         Contact contact = new Contact(FirstName = 'AcmeFirstname', LastName = 'AcmeLastname', Phone='123456789', Email = 'acme@acme.com' , accountId=acc.Id);
         insert contact;
+        Profile prof = [SELECT Id FROM Profile WHERE Name='1.4- Intl Regional Sales Manager']; 
+        User techUser = new User(Alias = 'standt', Email='testUser@testtechuser.com', 
+                                 EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', 
+                                 LocaleSidKey='en_US', ProfileId = prof.Id, 
+                                 TimeZoneSidKey='America/Los_Angeles', UserName='testUser@testtechuser.com');
         
+        techUser.IsActive =true;
+        insert techUser;
         Opportunity opportunity = new Opportunity();
         opportunity.Name = 'acme';
         opportunity.AccountId = acc.Id;
         opportunity.Pricebook2Id = TestUtilities.getStandardPricebookId();
-        opportunity.StageName = 'Closed Dead';
+        opportunity.StageName = 'Discovery';
         opportunity.Dead_Reason__c = 'acme';
         opportunity.CloseDate = Date.today().addYears(1);
         opportunity.Type = 'New Business';
         opportunity.Opportunity_Source__c = 'Other';
         opportunity.POC_Type__c = 'POC';
         opportunity.Deal_Type__c = 'Replication';
-         opportunity.Product_Type__c='Both';
+        opportunity.Product_Type__c='Both';
+        opportunity.Technical_Responsible__c=techUser.Id;
         insert opportunity;
         
         Request__c request = new Request__c(POC_Contact__c = contact.Id);
@@ -34,7 +43,7 @@ public class TestPOCRenewalAssetsController {
         request.PhysicalProduct1__c = 'EC-XS';
         request.PhysicalQuantity1__c = 2;
         request.PhysicalLocation1__c = 'Street1' + '\r\n' + 'Street2' + '\r\n' + 'Moscow, BC 12' + '\r\n' + 'Canada' + '\r\n' + 'Kevin chong' + '\r\n' + '12111' + '\r\n' + 'company' + '\r\n' + 'finalCountry' + '\r\n' + 'finalFirstname finalLastname' + '\r\n' + '123234' + '\r\n' + 'finalCompany' + '\r\n' + 'vatId' + '\r\n' + 'vatAddress';
-        
+        Test.stopTest();
         ApexPages.StandardController stdController = new ApexPages.StandardController(request);
         CustomPOCRequestController controller = new CustomPOCRequestController(stdController);
         controller.savePage();
@@ -60,23 +69,32 @@ public class TestPOCRenewalAssetsController {
     @IsTest(SeeAllData=True)
     public static void TestPocRenewalAssets_WanOP()
     {
+        Test.startTest();
         Account acc = new Account(Name='testPOC');
         insert acc;
         Contact contact = new Contact(FirstName = 'AcmeFirstname', LastName = 'AcmeLastname', Phone='123456789', Email = 'acme@acme.com' , accountId=acc.Id);
         insert contact;
+        Profile prof = [SELECT Id FROM Profile WHERE Name='1.4- Intl Regional Sales Manager']; 
+        User techUser = new User(Alias = 'standt', Email='testUser@testtechuser.com', 
+                                 EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', 
+                                 LocaleSidKey='en_US', ProfileId = prof.Id, 
+                                 TimeZoneSidKey='America/Los_Angeles', UserName='testUser@testtechuser.com');
         
+        techUser.IsActive =true;
+        insert techUser;
         Opportunity opportunity = new Opportunity();
         opportunity.Name = 'acme';
         opportunity.AccountId = acc.Id;
         opportunity.Pricebook2Id = TestUtilities.getStandardPricebookId();
-        opportunity.StageName = 'Closed Dead';
+        opportunity.StageName = 'Discovery';
         opportunity.Dead_Reason__c = 'acme';
         opportunity.CloseDate = Date.today().addYears(1);
         opportunity.Type = 'New Business';
         opportunity.Opportunity_Source__c = 'Other';
         opportunity.POC_Type__c = 'POC';
         opportunity.Deal_Type__c = 'Replication';
-          opportunity.Product_Type__c='Both';
+        opportunity.Product_Type__c='Both';
+        opportunity.Technical_Responsible__c=techUser.Id;
         insert opportunity;
         
         Request__c request = new Request__c(POC_Contact__c = contact.Id);
@@ -94,7 +112,7 @@ public class TestPOCRenewalAssetsController {
         request.PhysicalProduct1__c = 'VX 3000';
         request.PhysicalQuantity1__c = 2;
         request.PhysicalLocation1__c = 'Street1' + '\r\n' + 'Street2' + '\r\n' + 'Moscow, BC 12' + '\r\n' + 'Canada' + '\r\n' + 'Kevin chong' + '\r\n' + '12111' + '\r\n' + 'company' + '\r\n' + 'finalCountry' + '\r\n' + 'finalFirstname finalLastname' + '\r\n' + '123234' + '\r\n' + 'finalCompany' + '\r\n' + 'vatId' + '\r\n' + 'vatAddress';
-        
+        Test.stopTest();
         ApexPages.StandardController stdController = new ApexPages.StandardController(request);
         CustomPOCRequestController controller = new CustomPOCRequestController(stdController);
         controller.savePage();

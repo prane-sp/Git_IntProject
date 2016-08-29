@@ -197,6 +197,7 @@ public without sharing class LeadToPOCAutomationHelper
     public static void convertAndFulfillBuy(Id leadId)
     {        
         SavePoint sp = Database.setSavePoint();
+        string oppType='New Business';
         List<Lead> leads = [select Id, FirstName, LastName, Email, Model_for_Trial__c, Marketplace_Code__c, Company, Description, IsConverted from Lead where id=:leadId limit 1 for update];
         if(leads.size() == 0)
         {
@@ -208,6 +209,14 @@ public without sharing class LeadToPOCAutomationHelper
         }
         Lead lead = leads[0];
         Contact cont = getLatestContactByEmail(lead.email);
+        if(cont!=null)
+        {
+            string acctType= cont.Account.Type;
+            if(acctType!='Prospect')
+            {
+                oppType='Follow on Business';
+            }
+        }
         try
         {
             //convert lead
@@ -227,6 +236,7 @@ public without sharing class LeadToPOCAutomationHelper
                 opplist[0].Pricebook2Id = defaultPricebookId;
                 opplist[0].StageName = 'Technically Selected';
                 opplist[0].Probability = 50;
+                opplist[0].Type=oppType;
                 update opplist[0];                
                 
                 List<LeadToPOCAutomationHelper.ModelInfo> models = LeadToPOCAutomationHelper.resolveModelTrial(lead.Model_for_Trial__c);                
@@ -360,7 +370,7 @@ public without sharing class LeadToPOCAutomationHelper
         if(myemail != null && myemail.length() >= 2)
         {
             list<list<Contact>> mylist = [FIND :myemail In EMAIL FIELDS RETURNING 
-                                          Contact(Id, Firstname, Lastname, Email, AccountId, Account.Name, CreatedById 
+                                          Contact(Id, Firstname, Lastname, Email, AccountId, Account.Name, CreatedById , Account.Type
                                             where accountId != null
                                             order by createdById desc limit 1)];
             if(mylist[0].size() > 0)

@@ -1,6 +1,6 @@
-@isTest
-private class TestLeadToPOCAutomation 
+public class TestLeadToPOCAutomation 
 {   
+    /* This is disabled because the automation of marketplace trial is turned off
     @isTest
     static void testVXXModel() 
     {
@@ -264,5 +264,5 @@ private class TestLeadToPOCAutomation
         System.assertEquals('acme', models[0].Name);
         System.assertEquals(null, models[0].Type);
         System.assertEquals(null, models[0].Qty);  
-    }
+    }*/
 }

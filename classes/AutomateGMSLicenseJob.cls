@@ -59,8 +59,12 @@ public class AutomateGMSLicenseJob implements Schedulable, Database.Batchable<sO
     
     public void finish(Database.BatchableContext context)
     {
-        AutomateVirtualPOCBatch obj= new AutomateVirtualPOCBatch();
-        System.scheduleBatch(obj, 'Automate POC Shipments', 15);
+        if(!Test.isRunningTest())
+        {	
+             AutomateVirtualPOCBatch obj= new AutomateVirtualPOCBatch();
+        	 System.scheduleBatch(obj, 'Automate POC Shipments', 15);
+        }
+       
         
     }
 }

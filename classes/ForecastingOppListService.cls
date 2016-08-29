@@ -70,7 +70,7 @@ public without sharing class ForecastingOppListService
         }
         else if(typeOption == 'Follow On')
         {
-            types = ' CloseDate <= :endDate and CloseDate >=:startDate and BookingType__c in (\'Subscription Renewal\', \'Follow On\') and IsClosed=false and ForecastCategoryName!=\'Omitted\' ';
+            types = ' CloseDate <= :endDate and CloseDate >=:startDate and BookingType__c=\'Follow On\' and IsClosed=false and ForecastCategoryName!=\'Omitted\' ';
         }
         else if(typeOption == 'Dell')
         {   //Dell

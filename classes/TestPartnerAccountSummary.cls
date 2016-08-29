@@ -12,6 +12,14 @@ public class TestPartnerAccountSummary {
         System.debug('acc1'+acc1.Id);
         Contact contact = new Contact(FirstName = 'AcmeFirstname', LastName = 'AcmeLastname', Phone='123456789', Email = 'acme@acme.com' , accountId=acc.Id);
         insert contact;
+        Profile prof = [SELECT Id FROM Profile WHERE Name='13g-SP Partner Community']; 
+        User usr = new User(Alias = 'standt', Email='testUser@uniquetest.com', 
+                            EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', 
+                            LocaleSidKey='en_US', ProfileId = prof.Id, ContactId=contact.Id,
+                            TimeZoneSidKey='America/Los_Angeles', UserName='testUser@uniquetest.com');
+        
+        usr.IsActive =true;
+        insert usr;
         Opportunity opportunity = new Opportunity();
         opportunity.Name = 'acme';
         opportunity.AccountId = acc1.Id;
@@ -25,17 +33,11 @@ public class TestPartnerAccountSummary {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.Registering_Partner__c=acc.Id;
         opportunity.Registering_Partner_Sales_Rep__c=contact.Id;
+        opportunity.First_CAM_Assigned__c=usr.Id;
         insert opportunity;
         
         
-        Profile prof = [SELECT Id FROM Profile WHERE Name='13g-SP Partner Community']; 
-        User usr = new User(Alias = 'standt', Email='testUser@uniquetest.com', 
-                            EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', 
-                            LocaleSidKey='en_US', ProfileId = prof.Id, ContactId=contact.Id,
-                            TimeZoneSidKey='America/Los_Angeles', UserName='testUser@uniquetest.com');
         
-        usr.IsActive =true;
-        insert usr;
         OpportunityShare oppShare = new OpportunityShare(OpportunityId=opportunity.Id,UserOrGroupId=usr.Id,OpportunityAccessLevel='Edit');
         insert oppShare;
         System.runAs(usr)
@@ -82,6 +84,7 @@ public class TestPartnerAccountSummary {
             opportunity.Deal_Type__c = 'Replication';
             opportunity.Registering_Partner__c=acc.Id;
             opportunity.Registering_Partner_Sales_Rep__c=contact.Id;
+            opportunity.First_CAM_Assigned__c=usr.Id;
             insert opportunity;
             
         }
@@ -97,7 +100,9 @@ public class TestPartnerAccountSummary {
         insert oppShare;
         System.runAs(usr1)
         {
-            PageReference pageRef= Page.ShowRenewalOppRelatedListToPartner;
+            //PageReference pageRef= Page.ShowRenewalOppRelatedListToPartner;
+            //Test.setCurrentPage(pageRef);
+            PageReference pageRef= Page.PartnerAccountSummary;
             Test.setCurrentPage(pageRef);
             PartnerAccountSummaryController obj= new PartnerAccountSummaryController();
             System.assertEquals(1, obj.RenewalOppsList.size());
@@ -107,7 +112,7 @@ public class TestPartnerAccountSummary {
         
     }
     
-       @isTest(SeeAllData=true)
+    @isTest(SeeAllData=true)
     public static void CheckPageName_OpenLeads()
     {
         Account acc = new Account(Name='testECPOC');
@@ -139,12 +144,70 @@ public class TestPartnerAccountSummary {
         insert leadShare;
         System.runAs(usr)
         {
-            PageReference pageRef= Page.ShowPendingDealRegToPartner;
+            //PageReference pageRef= Page.ShowPendingDealRegToPartner;
+            //Test.setCurrentPage(pageRef);
+            //
+            PageReference pageRef= Page.PartnerAccountSummary;
             Test.setCurrentPage(pageRef);
             PartnerAccountSummaryController openOpps= new PartnerAccountSummaryController();
             System.assertEquals(1, openOpps.PendingDealReg.size());
         }
         
+        
+    }
+    
+    @isTest(SeeAllData=true)
+    public static void RequestTrial_OpenOpp()
+    {
+        Account acc = new Account(Name='testECPOC');
+        insert acc;
+        System.debug('acc'+acc.Id);
+        Account acc1 = new Account(Name='testACC');
+        insert acc1;
+        System.debug('acc1'+acc1.Id);
+        Contact contact = new Contact(FirstName = 'AcmeFirstname', LastName = 'AcmeLastname', Phone='123456789', Email = 'acme@acme.com' , accountId=acc.Id);
+        insert contact;
+        Profile prof = [SELECT Id FROM Profile WHERE Name='13g-SP Partner Community']; 
+        User usr = new User(Alias = 'standt', Email='testUser@uniquetest.com', 
+                            EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', 
+                            LocaleSidKey='en_US', ProfileId = prof.Id, ContactId=contact.Id,
+                            TimeZoneSidKey='America/Los_Angeles', UserName='testUser@uniquetest.com');
+        
+        usr.IsActive =true;
+        insert usr;
+        Opportunity opportunity = new Opportunity();
+        opportunity.Name = 'acme';
+        opportunity.AccountId = acc1.Id;
+        opportunity.StageName = 'Discovery';
+        opportunity.Dead_Reason__c = 'acme';
+        opportunity.CloseDate = Date.today().addYears(1);
+        opportunity.Type = 'New Business';
+        opportunity.Opportunity_Source__c = 'Other';
+        opportunity.POC_Type__c = 'POC';
+        opportunity.Product_Type__c = 'Both';
+        opportunity.Deal_Type__c = 'Replication';
+        opportunity.Registering_Partner__c=acc.Id;
+        opportunity.Registering_Partner_Sales_Rep__c=contact.Id;
+        opportunity.First_CAM_Assigned__c=usr.Id;
+        insert opportunity;
+        
+        
+        
+        OpportunityShare oppShare = new OpportunityShare(OpportunityId=opportunity.Id,UserOrGroupId=usr.Id,OpportunityAccessLevel='Edit');
+        insert oppShare;
+        System.runAs(usr)
+        {
+            System.debug(opportunity.Registering_Partner__c);
+            System.debug(opportunity.Registering_Partner_Sales_Rep__c);
+            PageReference pageRef= Page.PartnerAccountSummary;
+            Test.setCurrentPage(pageRef);
+            PartnerAccountSummaryController obj= new PartnerAccountSummaryController();
+            System.assertEquals(1, obj.OpenOppsList.size());
+            obj.OpenOppsList[0].IsChecked=true;
+            Test.startTest();
+            obj.RequestTrial();
+            Test.stopTest();
+        }
         
     }
 }

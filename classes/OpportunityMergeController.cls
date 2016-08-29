@@ -1,6 +1,6 @@
 /*
- *    Controller of Page OpportunityMerge
- */
+*    Controller of Page OpportunityMerge
+*/
 public class OpportunityMergeController 
 {
     private static Map<String, Schema.SObjectField> fieldResults;
@@ -37,13 +37,13 @@ public class OpportunityMergeController
     {
         Id masterOppId = ApexPages.currentPage().getParameters().get('op1');
         Id childOppId = ApexPages.currentPage().getParameters().get('op2');
-
+        
         initOpps(masterOppId, childOppId);
         
         LeftOppName = LeftOpp.Name.replaceAll('\'', '&#39;').replaceAll('\"', '&quot;');
         RightOppName = RightOpp.Name.replaceAll('\'', '&#39;').replaceAll('\"', '&quot;');
     }
-
+    
     public List<FieldComparisonInfo> ComparingFields { get; set; }
     public Opportunity LeftOpp { get; set; }
     public Opportunity RightOpp { get; set; }
@@ -151,15 +151,15 @@ public class OpportunityMergeController
         }
         
         /*try
-        {
-            //reset the mark
-            master.Bypassing_Validation__c = false;
-            update master;
-        }
-        catch(Exception e)
-        {
-            ApexPages.addMessages(e);
-        }*/
+{
+//reset the mark
+master.Bypassing_Validation__c = false;
+update master;
+}
+catch(Exception e)
+{
+ApexPages.addMessages(e);
+}*/
         return new PageReference('/' + master.Id);
     } 
     
@@ -197,7 +197,7 @@ public class OpportunityMergeController
         RightOpp = (rightOpps.size() > 0) ? (Opportunity)rightOpps[0] : new Opportunity();
         List<Lead> RightLeads = [select Id, Name from Lead where ConvertedOpportunityId = :RightOpp.Id limit 1];
         RightLead = (RightLeads.size() > 0) ? RightLeads[0] : null;
-
+        
         ComparingFields = new List<FieldComparisonInfo>();
         String leftLeadField = (LeftLead == null) ? 'None' : '<a href="/' + LeftLead.Id+ '" target="_blank">' + LeftLead.Name + '</a>';
         String rightLeadField = (RightLead == null) ? 'None ' : '<a href="/' + RightLead.Id  +' " target="_blank">' + RightLead.Name + '</a> ';
@@ -307,7 +307,7 @@ public class OpportunityMergeController
     private void combineOtherRelatedList(Id winningOppId, Id losingOppId)
     {
         Opportunity losingOpp = [Select (Select Id From Requests__r), (Select Id From Purchase_Orders__r), (Select Id From POCSummaries__r), 
-                                (Select Id From Notes), (Select Id From Contracts__r), (Select Id From Attachments) From Opportunity where Id = :losingOppId limit 1];
+                                 (Select Id From Notes), (Select Id From Contracts__r), (Select Id From Attachments) From Opportunity where Id = :losingOppId limit 1];
         if(losingOpp.Requests__r.size() > 0)
         {
             String pocRequestSql = 'select ';
@@ -410,7 +410,7 @@ public class OpportunityMergeController
     private void processProducts(Id winningOppId, Id losingOppId)
     {
         delete [select Id from OpportunityLineItem where OpportunityId = :winningOppId];
-                
+        
         if([select Id from OpportunityLineItem where OpportunityId = :losingOppId limit 1].size() > 0)
         {
             String oppLineItemSql = 'select ';
@@ -421,7 +421,7 @@ public class OpportunityMergeController
                 //cloning only writable fields
                 //UnitPrice and TotalPrice is mutual exclusive. 
                 if(describeField.isAccessible() && describeField.isUpdateable() && !(describeField.isAutoNumber() || 
-                   describeField.isCalculated()) && describeField.getName() + '' != 'TotalPrice')
+                                                                                     describeField.isCalculated()) && describeField.getName() + '' != 'TotalPrice')
                 {
                     oppLineItemSql += describeField.getName() + ', ';
                     oppLineItemFieldNames.add(describeField.getName() + '');
@@ -431,7 +431,7 @@ public class OpportunityMergeController
             oppLineItemFieldNames.add('PricebookEntryId');
             
             List<OpportunityLineItem> oppLineItems = (List<OpportunityLineItem>)Database.query(oppLineItemSql + 
-            ' from OpportunityLineItem where OpportunityId = \'' + losingOppId + '\'' + ' and PricebookEntry.Product2.IsActive = true');
+                                                                                               ' from OpportunityLineItem where OpportunityId = \'' + losingOppId + '\'' + ' and PricebookEntry.Product2.IsActive = true');
             
             List<OpportunityLineItem> newOppLineItems = new List<OpportunityLineItem>();
             for(OpportunityLineItem oppLineItem : oppLineItems)
@@ -449,7 +449,7 @@ public class OpportunityMergeController
     private void processCompetitors(Id winningOppId, Id losingOppId)
     {
         delete [Select Id From OpportunityCompetitor where OpportunityId=:winningOppId];
-                
+        
         List<OpportunityCompetitor> newCompetitors = new List<OpportunityCompetitor>();
         for(OpportunityCompetitor competitor : [Select Weaknesses, Strengths, CompetitorName From OpportunityCompetitor where OpportunityId=:losingOppId])
         {
@@ -466,7 +466,7 @@ public class OpportunityMergeController
     private void processPartners(Id winningOppId, Id losingOppId)
     {
         delete [Select Id From Partner where OpportunityId = :winningOppId];
-                
+        
         List<Partner> newPartners = new List<Partner>();
         for(Partner partner : [Select Role, IsPrimary, AccountToId, Opportunity.AccountId From Partner where OpportunityId = :losingOppId and Role != 'Client'])
         {
@@ -483,7 +483,7 @@ public class OpportunityMergeController
     private void processQuotes(Id winningOppId, Id losingOppId)
     {
         delete [select Id from Quote__c where Opportunity__c = :winningOppId];
-                
+        
         List<Quote__c> quotes = [select Id, Opportunity__c from Quote__c where Opportunity__c = :losingOppId];
         if(quotes.size() > 0)
         {
@@ -560,13 +560,22 @@ public class OpportunityMergeController
         
         Account oppAccount = new Account(Name = 'Test Opp Account');
         insert oppAccount;
+        Contact con= new Contact(LastName='testLastName',Email='abc@test2323.com',AccountId=oppAccount.Id);
+        insert con;
+        Test.startTest();
         List<Opportunity> opps = new List<Opportunity>();
         for(Integer i = 0; i < 2; i++)
         {
-            opps.add(new Opportunity(Name = 'acme' + i, AccountId = oppAccount.Id, CloseDate = System.today(), StageName = 'Discovery', Pricebook2Id = pb.Id));
+            opps.add(new Opportunity(Name = 'acme' + i, AccountId = oppAccount.Id, CloseDate = System.today(), StageName = 'Discovery', Pricebook2Id = pb.Id,Technical_Responsible__c=UserInfo.getUserId()));
         }
         insert opps;
-        
+        List<OpportunityContactRole> oppContactRoles = new List<OpportunityContactRole>();
+        for(Opportunity item: opps)
+        {
+            oppContactRoles.add(new OpportunityContactRole(OpportunityId=item.Id,Role='Contact',ContactId=con.Id));
+        }
+        insert oppContactRoles;
+       
         Product2 product = new Product2(Name = 'Test Product', ProductCode = '111AAA', IsActive = true);
         insert product;
         PriceBookEntry entry = new PriceBookEntry(IsActive = true, PriceBook2Id = pb.Id, Product2Id = product.Id, UnitPrice = 10, UseStandardPrice = false);
@@ -589,14 +598,14 @@ public class OpportunityMergeController
         insert quotes;
         
         /*Account account = new Account(Name = 'Test Account');
-        insert account;
-        List<Partner> partners = new List<Partner>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            partners.add(new Partner(IsPrimary = true, AccountToId = account.Id, OpportunityId = opps[i].Id, Role='Tier 1'));
-        }
-        insert partners;
-        */
+insert account;
+List<Partner> partners = new List<Partner>();
+for(Integer i = 0; i < 2; i++)
+{
+partners.add(new Partner(IsPrimary = true, AccountToId = account.Id, OpportunityId = opps[i].Id, Role='Tier 1'));
+}
+insert partners;
+*/
         List<OpportunityCompetitor> competitors = new List<OpportunityCompetitor>();
         for(Integer i = 0; i < 2; i++)
         {
@@ -604,14 +613,14 @@ public class OpportunityMergeController
         }
         insert competitors;
         /*
-        //processes 'POC Requests', 'Notes and Attachments', 'Contracts', 'POC Summary', 'Purchase Order', and 'Ensemble Files' here.
-        List<Request__c> requests = new List<Request__c>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            requests.add(new Request__c(Opportunity__c = opps[i].Id, Priority__c = 'P3 - Medium', Status__c = 'Open', Type__c = 'Evaluation'));
-        }
-        insert requests;
-        */
+//processes 'POC Requests', 'Notes and Attachments', 'Contracts', 'POC Summary', 'Purchase Order', and 'Ensemble Files' here.
+List<Request__c> requests = new List<Request__c>();
+for(Integer i = 0; i < 2; i++)
+{
+requests.add(new Request__c(Opportunity__c = opps[i].Id, Priority__c = 'P3 - Medium', Status__c = 'Open', Type__c = 'Evaluation'));
+}
+insert requests;
+*/
         List<Note> notes = new List<Note>();
         for(Integer i = 0; i < 2; i++)
         {
@@ -626,31 +635,31 @@ public class OpportunityMergeController
                                            Description = 'Luffy', Body = Blob.valueof('111')));
         }
         insert attachments;
-        
+         Test.stopTest();
         /*Contract contract = new Contract(Name = 'Test Contract', AccountId = account.Id, SP_Contract_Number__c = '11');
-        insert contract;
-        List<Contract_to_Opportunity__c> contracts = new List<Contract_to_Opportunity__c>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            contracts.add(new Contract_to_Opportunity__c(Opportunity__c = opps[i].Id, contract__c = contract.Id));
-        }
-        insert contracts;
+insert contract;
+List<Contract_to_Opportunity__c> contracts = new List<Contract_to_Opportunity__c>();
+for(Integer i = 0; i < 2; i++)
+{
+contracts.add(new Contract_to_Opportunity__c(Opportunity__c = opps[i].Id, contract__c = contract.Id));
+}
+insert contracts;
+
+List<POC_Summary__c> pocSummaries = new List<POC_Summary__c>();
+for(Integer i = 0; i < 2; i++)
+{
+pocSummaries.add(new POC_Summary__c(POC_For__c = opps[i].Id));
+}
+insert pocSummaries;
+
+List<Purchase_Order__c> pocOrders = new List<Purchase_Order__c>();
+for(Integer i = 0; i < 2; i++)
+{
+pocOrders.add(new Purchase_Order__c(Opportunity__c = opps[i].Id));
+}
+insert pocOrders;*/
         
-        List<POC_Summary__c> pocSummaries = new List<POC_Summary__c>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            pocSummaries.add(new POC_Summary__c(POC_For__c = opps[i].Id));
-        }
-        insert pocSummaries;
         
-        List<Purchase_Order__c> pocOrders = new List<Purchase_Order__c>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            pocOrders.add(new Purchase_Order__c(Opportunity__c = opps[i].Id));
-        }
-        insert pocOrders;*/
-        
-        Test.startTest();
         PageReference page = new PageReference('/apex/OppMerge');
         Test.setCurrentPage(page);
         ApexPages.currentPage().getParameters().put('op1', opps[0].Id);
@@ -665,126 +674,126 @@ public class OpportunityMergeController
         
         controller.ComparingFields[1].selectedSide = 'right';
         controller.ComparingFields[2].selectedSide = 'right';
+        
         controller.mergeOpps();
         //System.assertEquals('acme0', [select Id, Name from Opportunity where Id = :opps[1].Id limit 1].Name);
         //System.assertEquals(opps[1].Id, [select Id, Surviving_Opportunity__c from Opportunity where Id = :opps[0].Id limit 1].Surviving_Opportunity__c);
-        Test.stopTest();
     }
     
     /*@IsTest(SeeAllData=true)
-    static void test2()
-    {
-        PriceBook2 pb = [select Id from Pricebook2 where IsStandard=true limit 1];
-        
-        Account oppAccount = new Account(Name = 'Test Opp Account');
-        insert oppAccount;
-        List<Opportunity> opps = new List<Opportunity>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            opps.add(new Opportunity(Name = 'acme' + i, AccountId = oppAccount.Id, CloseDate = System.today(), StageName = 'Discovery', Pricebook2Id = pb.Id));
-        }
-        insert opps;
-        
-        Product2 product = new Product2(Name = 'Test Product', ProductCode = '111AAA', IsActive = true);
-        insert product;
-        PriceBookEntry entry = new PriceBookEntry(IsActive = true, PriceBook2Id = pb.Id, Product2Id = product.Id, UnitPrice = 10, UseStandardPrice = false);
-        insert entry;
-        OpportunityLineItem oppLine = new OpportunityLineItem(OpportunityId = opps[0].Id, PriceBookEntryId = entry.Id, Quantity = 1, UnitPrice = 10);
-        insert oppLine;
-        
-        Product2 product1 = new Product2(Name = 'Test Product1', ProductCode = '111AAA111', IsActive = true);
-        insert product1;
-        PriceBookEntry entry1 = new PriceBookEntry(IsActive = true, PriceBook2Id = pb.Id, Product2Id = product1.Id, UnitPrice = 100, UseStandardPrice = false);
-        insert entry1;
-        OpportunityLineItem oppLine1 = new OpportunityLineItem(OpportunityId = opps[1].Id, PriceBookEntryId = entry1.Id, Quantity = 2, UnitPrice = 100);
-        insert oppLine1;
-        
-        List<Quote__c> quotes = new List<Quote__c>(); 
-        for(Integer i = 0; i < 2; i++)
-        {
-            quotes.add(new Quote__c(Opportunity__c = opps[i].Id, Quote_Valid_Until__c = System.today()));
-        }
-        insert quotes;
-        
-        Account account = new Account(Name = 'Test Account');
-        insert account;
-        List<Partner> partners = new List<Partner>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            partners.add(new Partner(IsPrimary = true, AccountToId = account.Id, OpportunityId = opps[i].Id, Role='Tier 1'));
-        }
-        insert partners;
-        
-        List<OpportunityCompetitor> competitors = new List<OpportunityCompetitor>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            competitors.add(new OpportunityCompetitor(CompetitorName = 'Test Competitor' + i, Strengths = 'good', Weaknesses = 'bad', OpportunityId = opps[i].Id));
-        }
-        insert competitors;
-        //processes 'POC Requests', 'Notes and Attachments', 'Contracts', 'POC Summary', 'Purchase Order', and 'Ensemble Files' here.
-        List<Request__c> requests = new List<Request__c>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            requests.add(new Request__c(Opportunity__c = opps[i].Id, Priority__c = 'P3 - Medium', Status__c = 'Open', Type__c = 'Evaluation'));
-        }
-        insert requests;
-        
-        List<Note> notes = new List<Note>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            notes.add(new Note(ParentId = opps[i].Id, Title = 'Test Title' + i, IsPrivate = true, Body = 'Luffy'));
-        }
-        insert notes;
-        
-        List<Attachment> attachments = new List<Attachment>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            attachments.add(new Attachment(Name = 'Test Attachment' + i, ParentId = opps[i].Id, IsPrivate = true, 
-                                           Description = 'Luffy', Body = Blob.valueof('111')));
-        }
-        insert attachments;
-        
-        Contract contract = new Contract(Name = 'Test Contract', AccountId = account.Id, SP_Contract_Number__c = '11');
-        insert contract;
-        List<Contract_to_Opportunity__c> contracts = new List<Contract_to_Opportunity__c>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            contracts.add(new Contract_to_Opportunity__c(Opportunity__c = opps[i].Id, contract__c = contract.Id));
-        }
-        insert contracts;
-        
-        List<POC_Summary__c> pocSummaries = new List<POC_Summary__c>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            pocSummaries.add(new POC_Summary__c(POC_For__c = opps[i].Id));
-        }
-        insert pocSummaries;
-        
-        List<Purchase_Order__c> pocOrders = new List<Purchase_Order__c>();
-        for(Integer i = 0; i < 2; i++)
-        {
-            pocOrders.add(new Purchase_Order__c(Opportunity__c = opps[i].Id));
-        }
-        insert pocOrders;
-        
-        Test.startTest();
-        PageReference page = new PageReference('/apex/OppMerge');
-        Test.setCurrentPage(page);
-        ApexPages.currentPage().getParameters().put('op1', opps[0].Id);
-        ApexPages.currentPage().getParameters().put('op2', opps[1].Id);
-        OpportunityMergeController controller = new OpportunityMergeController();
-        
-        System.assertEquals(opps[0].Id, controller.LeftOpp.Id);
-        System.assertEquals(opps[1].Id, controller.RightOpp.Id);
-        
-        PageReference prevPage = controller.prev();
-        PageReference cancelpage = controller.cancel();
-        
-        controller.ComparingFields[1].selectedSide = 'right';
-        controller.ComparingFields[2].selectedSide = 'right';
-        controller.mergeOpps();
-        System.assertEquals('acme0', [select Id, Name from Opportunity where Id = :opps[1].Id limit 1].Name);
-        System.assertEquals(opps[1].Id, [select Id, Surviving_Opportunity__c from Opportunity where Id = :opps[0].Id limit 1].Surviving_Opportunity__c);
-        Test.stopTest();
-    }*/
+static void test2()
+{
+PriceBook2 pb = [select Id from Pricebook2 where IsStandard=true limit 1];
+
+Account oppAccount = new Account(Name = 'Test Opp Account');
+insert oppAccount;
+List<Opportunity> opps = new List<Opportunity>();
+for(Integer i = 0; i < 2; i++)
+{
+opps.add(new Opportunity(Name = 'acme' + i, AccountId = oppAccount.Id, CloseDate = System.today(), StageName = 'Discovery', Pricebook2Id = pb.Id));
+}
+insert opps;
+
+Product2 product = new Product2(Name = 'Test Product', ProductCode = '111AAA', IsActive = true);
+insert product;
+PriceBookEntry entry = new PriceBookEntry(IsActive = true, PriceBook2Id = pb.Id, Product2Id = product.Id, UnitPrice = 10, UseStandardPrice = false);
+insert entry;
+OpportunityLineItem oppLine = new OpportunityLineItem(OpportunityId = opps[0].Id, PriceBookEntryId = entry.Id, Quantity = 1, UnitPrice = 10);
+insert oppLine;
+
+Product2 product1 = new Product2(Name = 'Test Product1', ProductCode = '111AAA111', IsActive = true);
+insert product1;
+PriceBookEntry entry1 = new PriceBookEntry(IsActive = true, PriceBook2Id = pb.Id, Product2Id = product1.Id, UnitPrice = 100, UseStandardPrice = false);
+insert entry1;
+OpportunityLineItem oppLine1 = new OpportunityLineItem(OpportunityId = opps[1].Id, PriceBookEntryId = entry1.Id, Quantity = 2, UnitPrice = 100);
+insert oppLine1;
+
+List<Quote__c> quotes = new List<Quote__c>(); 
+for(Integer i = 0; i < 2; i++)
+{
+quotes.add(new Quote__c(Opportunity__c = opps[i].Id, Quote_Valid_Until__c = System.today()));
+}
+insert quotes;
+
+Account account = new Account(Name = 'Test Account');
+insert account;
+List<Partner> partners = new List<Partner>();
+for(Integer i = 0; i < 2; i++)
+{
+partners.add(new Partner(IsPrimary = true, AccountToId = account.Id, OpportunityId = opps[i].Id, Role='Tier 1'));
+}
+insert partners;
+
+List<OpportunityCompetitor> competitors = new List<OpportunityCompetitor>();
+for(Integer i = 0; i < 2; i++)
+{
+competitors.add(new OpportunityCompetitor(CompetitorName = 'Test Competitor' + i, Strengths = 'good', Weaknesses = 'bad', OpportunityId = opps[i].Id));
+}
+insert competitors;
+//processes 'POC Requests', 'Notes and Attachments', 'Contracts', 'POC Summary', 'Purchase Order', and 'Ensemble Files' here.
+List<Request__c> requests = new List<Request__c>();
+for(Integer i = 0; i < 2; i++)
+{
+requests.add(new Request__c(Opportunity__c = opps[i].Id, Priority__c = 'P3 - Medium', Status__c = 'Open', Type__c = 'Evaluation'));
+}
+insert requests;
+
+List<Note> notes = new List<Note>();
+for(Integer i = 0; i < 2; i++)
+{
+notes.add(new Note(ParentId = opps[i].Id, Title = 'Test Title' + i, IsPrivate = true, Body = 'Luffy'));
+}
+insert notes;
+
+List<Attachment> attachments = new List<Attachment>();
+for(Integer i = 0; i < 2; i++)
+{
+attachments.add(new Attachment(Name = 'Test Attachment' + i, ParentId = opps[i].Id, IsPrivate = true, 
+Description = 'Luffy', Body = Blob.valueof('111')));
+}
+insert attachments;
+
+Contract contract = new Contract(Name = 'Test Contract', AccountId = account.Id, SP_Contract_Number__c = '11');
+insert contract;
+List<Contract_to_Opportunity__c> contracts = new List<Contract_to_Opportunity__c>();
+for(Integer i = 0; i < 2; i++)
+{
+contracts.add(new Contract_to_Opportunity__c(Opportunity__c = opps[i].Id, contract__c = contract.Id));
+}
+insert contracts;
+
+List<POC_Summary__c> pocSummaries = new List<POC_Summary__c>();
+for(Integer i = 0; i < 2; i++)
+{
+pocSummaries.add(new POC_Summary__c(POC_For__c = opps[i].Id));
+}
+insert pocSummaries;
+
+List<Purchase_Order__c> pocOrders = new List<Purchase_Order__c>();
+for(Integer i = 0; i < 2; i++)
+{
+pocOrders.add(new Purchase_Order__c(Opportunity__c = opps[i].Id));
+}
+insert pocOrders;
+
+Test.startTest();
+PageReference page = new PageReference('/apex/OppMerge');
+Test.setCurrentPage(page);
+ApexPages.currentPage().getParameters().put('op1', opps[0].Id);
+ApexPages.currentPage().getParameters().put('op2', opps[1].Id);
+OpportunityMergeController controller = new OpportunityMergeController();
+
+System.assertEquals(opps[0].Id, controller.LeftOpp.Id);
+System.assertEquals(opps[1].Id, controller.RightOpp.Id);
+
+PageReference prevPage = controller.prev();
+PageReference cancelpage = controller.cancel();
+
+controller.ComparingFields[1].selectedSide = 'right';
+controller.ComparingFields[2].selectedSide = 'right';
+controller.mergeOpps();
+System.assertEquals('acme0', [select Id, Name from Opportunity where Id = :opps[1].Id limit 1].Name);
+System.assertEquals(opps[1].Id, [select Id, Surviving_Opportunity__c from Opportunity where Id = :opps[0].Id limit 1].Surviving_Opportunity__c);
+Test.stopTest();
+}*/
 }

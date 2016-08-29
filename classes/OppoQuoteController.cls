@@ -8,6 +8,7 @@ public class OppoQuoteController
     public OppoQuoteController(ApexPages.StandardController controller)
     {
         String oppoId = ((Opportunity)controller.getRecord()).Id;
+       
         if(oppoId instanceOf Id)
         {
             oppo = [select name, account.name, Pricebook2Id, HasOpportunityLineItem, 
@@ -20,6 +21,7 @@ public class OppoQuoteController
         {
             quote = new Quote__c();
         }
+        
     }
     
     public List<SelectOption> getPriceBooks()

@@ -2,7 +2,8 @@ public class PORenewalAssetsController {
     public Purchase_Order__c PORequest{get;set;}
     public Purchase_Order__c CustomerContact{get;set;}
     public List<Asset> AssetList{get;set;}
-    public License__c License { get; set; }
+    public License__c StartDate { get; set; }
+    public License__c EndDate { get; set; }
     public boolean IsFromApex {get;set;}
     public String AssetTypeSelection{get; set;}
     public PORenewalAssetsController(ApexPages.StandardController controller)
@@ -10,7 +11,8 @@ public class PORenewalAssetsController {
         
         if(AssetList==null)
         { AssetList= new List<Asset>();}
-        License= new License__c();
+        StartDate= new License__c();
+        EndDate= new License__c();
         CustomerContact = new Purchase_Order__c();
         List<Purchase_Order__c> requests = [select Id, Opportunity__c, Opportunity__r.AccountId,Email_Contact__c from Purchase_Order__c where Id = :controller.getId()];        
         if(!requests.isEmpty())
@@ -20,6 +22,7 @@ public class PORenewalAssetsController {
             
         }
         IsFromApex=false;
+        
         
     }
     public PageReference ResetFilter()
@@ -37,15 +40,40 @@ public class PORenewalAssetsController {
     }
     public List<Asset> RetreiveAssets(boolean isEdgeConnect)
     {
-        List<Asset> lstAssets=null;
-        
+        List<Asset> lstAssets=new List<Asset>();
         if(isEdgeConnect)
         {
-            lstAssets =[Select Id, Name,License_End_Date__c,Product2.Name,Status,Ship_Date__c, Product2.Product_Category__c,Product2.NumberOfLicenses__c,Hosted_GMS__c,GMS_Nodes__c,Product2.Model__c,Is_Selected_For_Renewal__c,Renewal_Date__c,License_Expiration__c from Asset where AccountId =:PORequest.Opportunity__r.AccountId and  Status in('Customer Subscription Active', 'Customer Subscription Expired','Customer Subscription') and Product2.Family='Virtual Image' and Product2.Name like'EC%' and (NOT Product2.Name='EC-ORCH')];
+            lstAssets =[Select Id, Name,License_End_Date__c,Product2.Name,Status,Ship_Date__c, Product2.Product_Category__c,Product2.NumberOfLicenses__c,Hosted_GMS__c,GMS_Nodes__c,Product2.Model__c,Is_Selected_For_Renewal__c,Renewal_Date__c,Renewal_Nodes__c ,License_Expiration__c,Renewal_Start_Date__c,Licenses_Nodes__c,Bandwidth_Nodes__c from Asset where AccountId =:PORequest.Opportunity__r.AccountId and  Status in('Customer Subscription Active', 'Customer Subscription Expired','Customer Subscription') and Product2.Family='Virtual Image' and Product2.Name like'EC%' and (NOT Product2.Name='EC-ORCH')];
+            for(Asset item: lstAssets)
+            {
+                string prodName=item.Product2.Name;
+                System.debug('Renewal Nodes'+item.Renewal_Nodes__c);
+                if(item.Renewal_Nodes__c==null || item.Renewal_Nodes__c==0)
+                {
+                    item.Renewal_Nodes__c=0;
+                    if(prodName.startsWith('EC-BASE') || prodName.startsWith('EC-PLUS'))
+                    {
+                        item.Renewal_Nodes__c=item.Licenses_Nodes__c;
+                    }
+                    if(prodName.startsWith('EC-BOOST'))
+                    {
+                        item.Renewal_Nodes__c=item.Bandwidth_Nodes__c;
+                    }
+                }
+                if(item.Renewal_Start_Date__c==null)
+                {
+                    item.Renewal_Start_Date__c=Date.today();
+                }
+                
+            }
         }
         else
         {
-            lstAssets =[Select Id, Name,License_End_Date__c,Product2.Name,Status,Ship_Date__c, Product2.Product_Category__c,Product2.NumberOfLicenses__c,Hosted_GMS__c,GMS_Nodes__c,Product2.Model__c,Is_Selected_For_Renewal__c,Renewal_Date__c,License_Expiration__c from Asset where AccountId =:PORequest.Opportunity__r.AccountId and  Status in('Customer Subscription Active', 'Customer Subscription Expired','Customer Subscription') and Product2.Family='Virtual Image'  and  (NOT Product2.Name like'EC%')];
+            lstAssets =[Select Id, Name,License_End_Date__c,Product2.Name,Status,Ship_Date__c, Product2.Product_Category__c,Product2.NumberOfLicenses__c,Hosted_GMS__c,GMS_Nodes__c,Product2.Model__c,Is_Selected_For_Renewal__c,Renewal_Date__c,License_Expiration__c,Renewal_Nodes__c,Renewal_Start_Date__c  from Asset where AccountId =:PORequest.Opportunity__r.AccountId and  Status in('Customer Subscription Active', 'Customer Subscription Expired','Customer Subscription') and Product2.Family='Virtual Image'  and  (NOT Product2.Name like'EC%')];
+            for(Asset item: lstAssets)
+            {
+                item.Renewal_Start_Date__c=Date.today();
+            }
         }
         
         
@@ -56,82 +84,109 @@ public class PORenewalAssetsController {
     public PageReference SaveAssets()
     {
         boolean isSuccessful=false;
-        SavePoint sp= Database.setSavepoint();
+        
         List<Asset> assets= new List<Asset>();
-        List<Asset> ecOrchAsset= new List<Asset>();
-        try
+        List<Asset> lstAssetToUpdateToday= new List<Asset>();
+        List<Asset> lstAssetToUpdateLater= new List<Asset>();
+        //List<Asset> ecOrchAsset= new List<Asset>();
+        for(Asset item: AssetList)
         {
-            
-            if(AssetTypeSelection=='2')
+            if(item.Is_Selected_For_Renewal__c)
             {
-                for(Asset item: AssetList)
+                assets.add(item);
+            }
+        }
+        if(ValidateAssets(assets))
+        {
+            for(Asset item: assets)
+            {
+                if(item.Renewal_Start_Date__c!=null && item.Renewal_Start_Date__c==Date.today())
                 {
-                    if(item.Is_Selected_For_Renewal__c)
-                    {
-                        if( item.Product2.Name=='EC-ORCH')
-                        { ecOrchAsset.add(item);}
-                        else
-                        {assets.add(item);}
-                    }
-                }
-                if(assets.size()==0 && ecorchAsset.size()==0)
-                {
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.INFO,'Please select records.'));
-                }
-                if(assets.size()>0 || ecOrchAsset.size()>0)
-                {
-                    
-                    if(assets.size()>0)
-                    {
-                        
-                        RenewalAssetsHelper.CheckUnCheckAssets(assets, true);
-                        RenewalAssetsHelper.RenewEdgeConnectLicense(assets); 
-                        isSuccessful=true;
-                       
-                    }
-                    if(ecOrchAsset.size()>0)
-                    {
-                        
-                        RenewalAssetsHelper.CheckUnCheckAssets(ecOrchAsset, true);
-                        RenewalAssetsHelper.CreateNewLicenses(ecOrchAsset);
-                        isSuccessful=true;
-                    }
-                    if(isSuccessful=true)
-                    {
-                        RenewalAssetsHelper.SendEmailsForPurchaseOrder(true, PORequest,CustomerContact.Email_Contact__c);
-                        isSuccessful=true;
-                    }
+                    lstAssetToUpdateToday.add(item);
                 }
                 else
                 {
+                    lstAssetToUpdateLater.add(item);
+                }
+            }
+            if(AssetTypeSelection=='2')
+            {
+                
+                if(assets.size()>0)
+                {
+                    SavePoint sp= Database.setSavepoint();
+                    try
+                    {
+                        if(lstAssetToUpdateToday.size()>0)
+                        {
+                            RenewalAssetsHelper.CheckUnCheckAssets(lstAssetToUpdateToday, true);
+                            RenewalAssetsHelper.RenewEdgeConnectLicense(lstAssetToUpdateToday);
+                        }
+                        if(lstAssetToUpdateLater.size()>0)
+                        {
+                            update lstAssetToUpdateLater;
+                        }
+                        isSuccessful=true;
+                    }
+                    catch(Exception ex)
+                    {
+                        Database.Rollback(sp);
+                        ApexPages.addMessages(ex);
+                        SilverPEakUtils.logException(ex);
+                    }
+                    
+                    if(isSuccessful)
+                    {
+                        RenewalAssetsHelper.SendEmailsForPurchaseOrder(true, PORequest,CustomerContact.Email_Contact__c);    
+                    }
+                    if(lstAssetToUpdateToday.size()>0)
+                    {
+                        RenewalAssetsHelper.CheckUnCheckAssets(lstAssetToUpdateToday, false);
+                        RenewalAssetsHelper.ClearRenewalDate(lstAssetToUpdateToday);
+                    }
+                    if(lstAssetToUpdateLater.size()>0)
+                    {
+                        RenewalAssetsHelper.CheckUnCheckAssets(lstAssetToUpdateLater, false);
+                    }
+                    
+                    
                     
                 }
             }
             if(AssetTypeSelection=='1')
             {
-               
-                for(Asset item: AssetList)
+                if(lstAssetToUpdateToday.size()>0)
                 {
-                    if( item.Is_Selected_For_Renewal__c)
-                    {assets.add(item);}
-                }
-                if(assets.size()>0)
-                {
-                    RenewalAssetsHelper.CheckUnCheckAssets(assets, true);
-                    if( RenewalAssetsHelper.CreateNewLicenses(assets))
+                    SavePoint sp= Database.setSavepoint();
+                    try
                     {
-                        
-                        RenewalAssetsHelper.SendEmailsForPurchaseOrder(false, PORequest,CustomerContact.Email_Contact__c);
+                        RenewalAssetsHelper.CheckUnCheckAssets(lstAssetToUpdateToday, true);
+                        RenewalAssetsHelper.CreateNewLicenses(lstAssetToUpdateToday);
                         isSuccessful=true;
                     }
-                }
-                else
-                {
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.INFO,'Please select records.'));
+                    catch(Exception ex)
+                    {
+                        Database.Rollback(sp);
+                        ApexPages.addMessages(ex);
+                        SilverPEakUtils.logException(ex);
+                    }
+                    finally
+                    {
+                        if(isSuccessful)
+                        {
+                            RenewalAssetsHelper.SendEmailsForPurchaseOrder(false, PORequest,CustomerContact.Email_Contact__c);    
+                        }
+                        if(lstAssetToUpdateToday.size()>0)
+                        {
+                            RenewalAssetsHelper.CheckUnCheckAssets(lstAssetToUpdateToday, false);
+                            RenewalAssetsHelper.ClearRenewalDate(lstAssetToUpdateToday);
+                        }
+                    }      
+                    
                 }
             }
             
-            if(ApexPages.currentPage() != null && isSuccessful)
+            if(ApexPages.currentPage() != null)
             {
                 if(!isFromApex)
                 {
@@ -141,28 +196,81 @@ public class PORenewalAssetsController {
                 
             }
         }
-        catch(Exception ex)
-        {
-            Database.Rollback(sp);
-            ApexPages.addMessages(ex);
-            SilverPEakUtils.logException(ex);
-        }
-        finally
-        {
-            if(assets.size()>0)
-            {
-                RenewalAssetsHelper.CheckUnCheckAssets(assets, false);
-                RenewalAssetsHelper.ClearRenewalDate(assets);
-            }
-            if(ecOrchAsset.size()>0)
-            {
-                RenewalAssetsHelper.CheckUnCheckAssets(ecOrchAsset, false);
-                RenewalAssetsHelper.ClearRenewalDate(ecOrchAsset);
-            }
-        }
         return null;
-        
     }
     
+    private  boolean ValidateAssets(List<Asset> lstAssets)
+    {
+        Set<string> lstDateIssue= new Set<string>();
+        Set<string> lstNodesIssue= new Set<string>(); 
+        if(lstAssets.size()==0)
+        {
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.INFO,'Please select records.'));
+            return false;
+        }
+        if(lstAssets.size()>0)
+        {
+            if(AssetTypeSelection=='2')
+            {
+                // Check the renewal start dates and end dates are not blank
+                // Check the renewal end dates is not less than start Date.
+                for(Asset item:lstAssets)
+                {
+                    if(item.Renewal_Start_Date__c== null || item.Renewal_Date__c== null)
+                    {
+                        lstDateIssue.add(item.Name);
+                    }
+                    if(item.Renewal_Start_Date__c!= null && item.Renewal_Date__c!= null)
+                    {
+                        if(item.Renewal_Date__c<item.Renewal_Start_Date__c)
+                        {
+                            lstDateIssue.add(item.Name);
+                        }
+                    }
+                    if(item.Renewal_Nodes__c==null)
+                    {
+                        lstNodesIssue.add(item.Name);
+                    }
+                }
+                if(lstDateIssue.size()>0)
+                {
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR,'Either Dates are empty or  end date is less than start date.\n'+ lstDateIssue));
+                    
+                }
+                if(lstNodesIssue.size()>0)
+                {
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR,'Updated Nodes cannot be empty for the selected Assets.\n'+ lstNodesIssue));
+                    
+                }
+                if(lstDateIssue.size()>0 || lstNodesIssue.size()>0)
+                {
+                    return false;
+                }
+            }
+            if(AssetTypeSelection=='1')
+            {
+                // Check the renewal start dates and end dates are not blank
+                // Check the renewal end dates is not less than start Date.
+                for(Asset item:lstAssets)
+                {
+                    if(item.Renewal_Date__c== null)
+                    {
+                        lstDateIssue.add(item.Name);
+                    }
+                }
+                if(lstDateIssue.size()>0)
+                {
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR,'Renewal End Date cannot be blank.\n'+ lstDateIssue));
+                    
+                }
+                if(lstDateIssue.size()>0 || lstNodesIssue.size()>0)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+        
+    }
     
 }

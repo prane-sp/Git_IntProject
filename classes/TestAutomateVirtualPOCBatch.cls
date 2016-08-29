@@ -43,6 +43,7 @@ public class TestAutomateVirtualPOCBatch {
         opportunity.CloseDate = Date.today().addYears(1);
         opportunity.Type = 'New Business';
         opportunity.Opportunity_Source__c = 'Other';
+        opportunity.Solution_Type__c='Hybrid WAN';
         opportunity.POC_Type__c = 'POC';
         opportunity.Product_Type__c = 'Both';
         opportunity.Deal_Type__c = 'Replication';
@@ -107,6 +108,7 @@ public class TestAutomateVirtualPOCBatch {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.OwnerId=usr.Id;
         opportunity.Technical_Responsibility__c=usr.Id;
+        opportunity.Solution_Type__c='Hybrid WAN';
         insert opportunity;
         
         Request__c request = new Request__c(POC_Contact__c = contact.Id);
@@ -167,6 +169,7 @@ public class TestAutomateVirtualPOCBatch {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.OwnerId=usr.Id;
         opportunity.Technical_Responsibility__c=usr.Id;
+        opportunity.Solution_Type__c='Hybrid WAN';
         insert opportunity;
         
         Request__c request = new Request__c(POC_Contact__c = contact.Id);
@@ -201,7 +204,7 @@ public class TestAutomateVirtualPOCBatch {
         insert acc;
         Contact contact = new Contact(FirstName = 'AcmeFirstname', LastName = 'AcmeLastname', Phone='123456789', Email = 'acme@acme.com' , accountId=acc.Id);
         insert contact;
-        Profile p = [select Id,name from Profile where UserType in :customerUserTypes limit 1];
+        Profile p = [select Id,name from Profile where Name='13g-SP Partner Community' limit 1];
         Profile prof = [SELECT Id FROM Profile WHERE Name='1.4- Intl Regional Sales Manager']; 
         User usr = new User(Alias = 'standt', Email='testUser@uniquetest.com', 
                             EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', 
@@ -239,6 +242,7 @@ public class TestAutomateVirtualPOCBatch {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.OwnerId=usr.Id;
         opportunity.Technical_Responsibility__c=usr.Id;
+        opportunity.Solution_Type__c='Hybrid WAN';
         insert opportunity;
         
         Request__c request = new Request__c(POC_Contact__c = contact.Id);
@@ -271,7 +275,7 @@ public class TestAutomateVirtualPOCBatch {
         Contact contact = new Contact(FirstName = 'AcmeFirstname', LastName = 'AcmeLastname', Phone='123456789', Email = 'acme@acme.com' , accountId=acc.Id);
         insert contact;
         
-        Profile p = [select Id,name from Profile where UserType in :customerUserTypes limit 1];
+       	Profile p = [select Id,name from Profile where Name='13g-SP Partner Community' limit 1];
         User partnerUser = new User(
             profileId = p.id, 
             username = 'acme@acme.com.pp', 
@@ -317,6 +321,7 @@ public class TestAutomateVirtualPOCBatch {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.OwnerId=usr.Id;
         opportunity.Technical_Responsibility__c=usr.Id;
+        opportunity.Solution_Type__c='Hybrid WAN';
         insert opportunity;
         
         Request__c request = new Request__c(POC_Contact__c = pocontact.Id);
@@ -375,6 +380,7 @@ public class TestAutomateVirtualPOCBatch {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.OwnerId=usr.Id;
         opportunity.Technical_Responsibility__c=usr.Id;
+        opportunity.Solution_Type__c='Hybrid WAN';
         insert opportunity;
         
         Request__c request = new Request__c(POC_Contact__c = contact.Id);
@@ -408,7 +414,7 @@ public class TestAutomateVirtualPOCBatch {
         Contact contact = new Contact(FirstName = 'AcmeFirstname', LastName = 'AcmeLastname', Phone='123456789', Email = 'acme@acme.com' , accountId=acc.Id);
         insert contact;
         
-        Profile p = [select Id,name from Profile where UserType in :customerUserTypes limit 1];
+       	Profile p = [select Id,name from Profile where Name='13g-SP Partner Community' limit 1];
         User partnerUser = new User(
             profileId = p.id, 
             username = 'acme@acme.com.pp', 
@@ -454,6 +460,7 @@ public class TestAutomateVirtualPOCBatch {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.OwnerId=usr.Id;
         opportunity.Technical_Responsibility__c=usr.Id;
+        opportunity.Solution_Type__c='Hybrid WAN';
         insert opportunity;
         
         Request__c request = new Request__c(POC_Contact__c = pocontact.Id);
@@ -494,7 +501,7 @@ public class TestAutomateVirtualPOCBatch {
         Contact contact = new Contact(FirstName = 'AcmeFirstname', LastName = 'AcmeLastname', Phone='123456789', Email = 'acme@acme.com' , accountId=acc.Id);
         insert contact;
         
-        Profile p = [select Id,name from Profile where UserType in :customerUserTypes limit 1];
+       Profile p = [select Id,name from Profile where Name='13g-SP Partner Community' limit 1];
         User partnerUser = new User(
             profileId = p.id, 
             username = 'acme@acme.com.pp', 
@@ -540,6 +547,7 @@ public class TestAutomateVirtualPOCBatch {
         opportunity.Deal_Type__c = 'Replication';
         opportunity.OwnerId=usr.Id;
         opportunity.Technical_Responsibility__c=usr.Id;
+        opportunity.Solution_Type__c='Hybrid WAN';
         insert opportunity;
         
         Request__c request = new Request__c(POC_Contact__c = pocontact.Id);

@@ -31,10 +31,10 @@ public class TestTriggerDecomissionOnAssets {
         asset1.Status = 'Customer Owned';
         asset1.Quantity = 1;
         insert asset1;
-        
+        Test.startTest();
         asset1.AccountId=acc1.Id;
         update asset1;
-        
+        Test.stopTest();
         List<Asset> lstAsset=[Select Id,Cloud_Portal_Sync_Status__c,Sync_With_Cloud_Portal__c from Asset where AccountId=:acc.Id];
         System.assertEquals(lstAsset[0].Cloud_Portal_Sync_Status__c,'Pending');
         System.assertEquals(lstAsset[0].Sync_With_Cloud_Portal__c,true);

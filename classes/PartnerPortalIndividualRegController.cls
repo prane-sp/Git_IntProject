@@ -1,3 +1,6 @@
+/*
+ * Controller of page PartnerPortalIndividualReg
+ */
 public without sharing class PartnerPortalIndividualRegController
 {
     private Id PartnerPortalProfileId;
@@ -21,6 +24,8 @@ public without sharing class PartnerPortalIndividualRegController
     public String State { get; set; }
     public String City { get; set; }
     public String ZipCode { get; set; }
+    //adding checkbox to track partner portal T & C agreement
+    public Boolean PortalTC { get; set; }
     public Partner_Contact_Profile__c NewUserProfile { get; set; }
     public Partner_Account_Profile__c TemporaryAddress { get; set; }  /* For dependent picklists on page */
     
@@ -34,7 +39,12 @@ public without sharing class PartnerPortalIndividualRegController
     {
         if(userIsExist())
         {
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Warning, 'We found an existing user in our system. If you forgot your password, please reset it at the login page.'));
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Warning, 'Our records indicate that you already have partner portal access. Please click on the Forgot your Password link <a href="https://partners.silver-peak.com/PartnerLogin" style="font-size:100%;margin:0;text-decoration:underline">here</a>.'));
+            return null;
+        }
+        if(PortalTC == FALSE)
+        {
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'You must agree to the terms and conditions to proceed.'));
             return null;
         }
         List<Contact> matchedContacts = findContacts();
@@ -84,22 +94,23 @@ public without sharing class PartnerPortalIndividualRegController
             MultipleAccounts = new List<SelectOption>();
             NewUserProfile = NewUserProfile.clone(false, false, false, false);
             Database.rollback(sp);
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'Failed to process your request. Please contact the your account manager.'));
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'Failed to process your request. Please contact your account manager.'));
             ApexPages.addMessages(ex);
+            System.assert(false, ex.getMessage());
         }
         return null;
     }
     
     private Boolean userIsExist()
     {
-        Integer c = [select count() from User where IsActive=true and UserType='PowerPartner' and Username=:Email limit 1];
+        String spName = Email + '.sp';
+        Integer c = [select count() from User where IsActive=true and UserType='PowerPartner' and Username=:spName limit 1];
         return c > 0;
     }
     
     private List<Contact> findContacts()
     {
-        
-        return [select Id from Contact where Account.IsPartner=true and Email=:Email];
+        return [select Id from Contact where (Account.Partner_Application_Status__c='Approved' or Account.IsPartner=true) and Email=:Email];
     }
     
     private List<Account> findAccounts()
@@ -107,11 +118,11 @@ public without sharing class PartnerPortalIndividualRegController
         String domain = getEmailDomain(Email);
         String pattern = '%' + domain + '%';
         List<Id> emailMatchedAccounts = new List<Id>();
-        for(Partner_Account_Profile__c profile : [select Account__c, Email_Domains_Used__c from Partner_Account_Profile__c where Email_Domains_Used__c != null and Email_Domains_Used__c like :pattern])
+        for(Account acct : [select Id, Email_Domain_Used__c from Account where Email_Domain_Used__c != null and Email_Domain_Used__c like :pattern and (Partner_Application_Status__c='Approved' or IsPartner=true)])
         {
-            if(domainIsMatched(profile.Email_Domains_Used__c, domain))
+            if(domainIsMatched(acct.Email_Domain_Used__c, domain))
             {
-                emailMatchedAccounts.add(profile.Account__c);
+                emailMatchedAccounts.add(acct.Id);
             }
         }
         return [select Id, Name from Account where Id in :emailMatchedAccounts];
@@ -136,6 +147,8 @@ public without sharing class PartnerPortalIndividualRegController
         newUser.MailingCity = City;
         newUser.MailingPostalCode = ZipCode;
         newUser.LeadSource = 'Partner Portal';
+        //adding checkbox to track partner portal T & C agreement
+        newUser.PortalTermsandConditionsAgreement__c = PortalTC;
         upsert newUser;
         
         NewUserProfile.Contact__c = newUser.Id;
@@ -157,7 +170,12 @@ public without sharing class PartnerPortalIndividualRegController
                                 TimeZoneSidKey='America/Tijuana',
                                 LocaleSidKey='en_US',
                                 EmailEncodingKey='ISO-8859-1',
-                                LanguageLocaleKey='en_US'
+                                LanguageLocaleKey='en_US',
+                                Country = TemporaryAddress.Country__c,
+                                State = State,
+                                City = City,
+                                PostalCode = ZipCode,
+                                Phone = Phone
                                 );
         insert newUser;
     }

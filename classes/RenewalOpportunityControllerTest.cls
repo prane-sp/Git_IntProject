@@ -7,6 +7,16 @@ public class RenewalOpportunityControllerTest
     @IsTest(SeeAllData=true)
     static void testRenewalOpportunityController()
     {
+        Profile prof = [SELECT Id FROM Profile WHERE Name='5-SP Contract Mgr']; 
+        User usr = new User(Alias = 'standt', Email='testUser@uniquetest.com', 
+                            EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', 
+                            LocaleSidKey='en_US', ProfileId = prof.Id, 
+                            TimeZoneSidKey='America/Los_Angeles', UserName='testUser@uniquetest.com');
+        
+        usr.IsActive =true;
+      //  insert usr;
+       System.runAs(usr)
+        {
         Account acc = new Account(Name = 'acme');
         insert acc;
         Opportunity opp = new Opportunity(Name = 'acme', CloseDate = System.today(), AccountId = acc.Id, StageName = 'Close Dead',
@@ -46,5 +56,6 @@ public class RenewalOpportunityControllerTest
         System.assert(controller.ProductOptions.size() > 0);
         
         Test.stopTest();
+        }
     }
 }
