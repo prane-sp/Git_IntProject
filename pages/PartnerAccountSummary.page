@@ -1,0 +1,80 @@
+<apex:page controller="PartnerAccountSummaryController" tabStyle="Account">
+    <apex:form >
+        <apex:pageblock >
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton style="halign:center" action="{!RequestTrial}" value="Request a Trial"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection collapsible="false" title="Account Information" columns="2">
+                <apex:outputField value="{!PartnerAccount.Name}"/>
+                <apex:outputField value="{!PartnerAccount.Industry}"/>
+                <apex:outputField value="{!PartnerAccount.Phone}"/>
+                <apex:outputField value="{!PartnerAccount.Fax}"/>
+                <apex:outputField value="{!PartnerAccount.WEbsite}"/>
+                <apex:outputField value="{!PartnerAccount.Partner_Type__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection collapsible="false" title="Address Information" columns="2" >
+                <apex:outputText value="{!PartnerAccount.BillingStreet}"/> 
+                <apex:outputText value="{!PartnerAccount.ShippingStreet}"/> 
+                <apex:outputText value="{!PartnerAccount.BillingCity}"/> 
+                <apex:outputText value="{!PartnerAccount.ShippingCity}"/> 
+                <apex:outputText value="{!PartnerAccount.BillingState}"/> 
+                <apex:outputText value="{!PartnerAccount.ShippingState}"/> 
+                <apex:outputText value="{!PartnerAccount.BillingPostalCode}"/>
+                <apex:outputText value="{!PartnerAccount.ShippingPostalCode}"/> 
+                <apex:outputText value="{!PartnerAccount.BillingCountry}"/>
+                <apex:outputText value="{!PartnerAccount.ShippingCountry}"/>
+            </apex:pageBlockSection>  
+            
+            <apex:pageBlockSection columns="1" collapsible="false" title="Related Lists">
+                <apex:pageblock >
+                    <apex:outputText value="There are no open opportunities." rendered="{!OpenOppsList.size=0}"></apex:outputText>
+                    <apex:pageBlockTable value="{!OpenOppsList}" var="o" rendered="{!OpenOppsList.size >0}" width="100%">
+                        <apex:column headerValue="Opportunity Name">
+                            <apex:outputLink target="_top" value="{!URLFOR($Action.Opportunity.View,o.Id)}">{!o.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!o.Owner.Name}" headerValue="Opportunity Owner"/>
+                        <apex:column value="{!o.StageName}" headerValue="Stage"/>
+                        <apex:column value="{!o.ForecastCategoryName}" headerValue="Forecast Category"/>
+                        <apex:column value="{!o.Amount}" headerValue="Amount"/>
+                        <apex:column value="{!o.CloseDate}" headerValue="Close Date"/>
+                        <apex:column headerValue="Registered Partner">
+                            <apex:outputLink target="_top" value="{!URLFOR($Action.Account.View,o.Registering_Partner__c)}">{!o.Registering_Partner__r.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!o.Registering_Partner_Sales_Rep__r.Name}" headerValue="Registered Partner Sales Rep" />
+                    </apex:pageBlockTable>  
+                </apex:pageblock>
+                <apex:pageblock >
+                    <apex:outputText value="There are no pending deal registrations." rendered="{!PendingDealReg.size=0}"></apex:outputText>
+                    <apex:pageBlockTable value="{!PendingDealReg}" var="lead" rendered="{!PendingDealReg.size >0}" width="100%">
+                        <apex:column value="{!lead.Company}" headerValue="Company Name"/>
+                        <apex:column value="{!lead.RSM__r.Name}" headerValue="RSM"/>
+                        <apex:column value="{!lead.CSM__r.Name}" headerValue="CAM"/>
+                        <apex:column headerValue="Registered Partner">
+                            <apex:outputLink target="_top" value="{!URLFOR($Action.Account.View,lead.Registered_Partner__c)}">{!lead.Registered_Partner__r.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!lead.Registered_Partner_Sales_Rep__r.Name}" headerValue="Registered Partner Rep" />
+                        <apex:column value="{!lead.Status}" headerValue="Lead Status"/>
+                        <apex:column value="{!lead.Deal_ID__c}" headerValue="DR #"/>
+                        <apex:column value="{!lead.Registration_Expiration__c}" headerValue="DR Expiration"/>               
+                    </apex:pageBlockTable>
+                </apex:pageblock>
+                <apex:pageblock >
+                    <apex:outputText value="There are no renewal opportunities." rendered="{!RenewalOppsList.size=0}"></apex:outputText>
+                    <apex:pageBlockTable value="{!RenewalOppsList}" var="o" rendered="{!RenewalOppsList.size >0}" width="100%">
+                        <apex:column headerValue="Opportunity Name">
+                            <apex:outputLink target="_top" value="{!URLFOR($Action.Opportunity.View,o.Id)}">{!o.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!o.Owner.Name}" headerValue="Opportunity Owner"/>
+                        <apex:column headerValue="Registered Partner">
+                            <apex:outputLink target="_top" value="{!URLFOR($Action.Account.View,o.Registering_Partner__c)}">{!o.Registering_Partner__r.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!o.Registering_Partner_Sales_Rep__r.Name}" headerValue="Registered Partner Rep" />
+                        <apex:column value="{!o.Amount}" headerValue="Amount"/>
+                        <apex:column value="{!o.StageName}" headerValue="Stage"/>
+                        <apex:column value="{!o.CloseDate}" headerValue="Close Date"/>
+                    </apex:pageBlockTable>
+                </apex:pageblock>
+            </apex:pageBlockSection>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

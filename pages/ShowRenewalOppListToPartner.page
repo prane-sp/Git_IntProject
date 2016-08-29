@@ -1,0 +1,22 @@
+<apex:page standardController="Account" extensions="RenewalOpportunitiesRelatedList" >
+ <apex:form >
+<apex:pageblock id="CustomList" title="Deal Registrations">
+    
+   <apex:pageBlockTable value="{!OppsList}" var="o" rendered="{!NOT(ISNULL(OppsList))}" width="100%">
+        <apex:outputLink target="_top" value="{!URLFOR($Action.Opportunity.Edit,o.Id)}">Edit</apex:outputLink>
+     <apex:column headerValue="Opportunity Name">
+          <apex:outputLink target="_top" value="{!URLFOR($Action.Opportunity.View,o.Id)}">{!o.Name}</apex:outputLink>
+        </apex:column>
+          <apex:column headerValue="Account Name">
+          <apex:outputLink target="_top" value="{!URLFOR($Action.Account.View,o.Account.Id)}">{!o.Account.Name}</apex:outputLink>
+        </apex:column>
+        <apex:column value="{!o.Account.Site}" headerValue="Site"/>
+       <apex:column value="{!o.CloseDate}" headerValue="Close Date"></apex:column>
+       <apex:column value="{!o.StageName}" headerValue="Stage"/>
+       <apex:column value="{!o.ForecastCategoryName}" headerValue="Forecast Category"/>
+       <apex:column value="{!o.Primary_Partner__r.Name}" headerValue="Primary Partner" />
+       <apex:column value="{!o.Registered_Partner__r.Name}" headerValue="Registered Partner" />
+   </apex:pageBlockTable>
+ </apex:pageblock>
+</apex:form>
+</apex:page>

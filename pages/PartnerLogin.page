@@ -1,0 +1,57 @@
+<apex:page showheader="false" controller="PartnerPortalLoginController">
+    <apex:composition template="PartnerCommunityTemplate">
+    <apex:define name="body">
+    <style>
+        .loginBtnContainer {
+            float: left;
+            width: 100px;
+        }
+        .loginBtnContainer .loginBtn {
+            margin-top: 0px;
+        }
+        .loginLinkContainer {
+            float: right;
+            text-align: right;
+        }
+        .loginLinkContainer .loginLink {
+            display: block;
+            line-height:25px;
+        }
+        .form-signin {
+            padding-bottom: 10px;
+        }
+    </style>
+    <script>
+        if(window.location.hostname == "partner.silver-peak.com") {
+            window.location.href = window.location.href.replace("partner.", "partners.");
+        }
+    </script>
+    <div>
+        <div class="wrapper" style="margin-top:0;margin-bottom:0">
+            <div class="signin-logo"></div>
+            <apex:form styleClass="form-signin"> 
+                <h3 class="form-signin-heading">Login Here</h3>
+                <div>&nbsp;</div>
+                <apex:pageMessages />
+                <apex:inputText styleClass="form-control" value="{!username}" html-placeholder="Email" />
+                <apex:inputSecret styleClass="form-control" value="{!password}" html-placeholder="Password" />
+                <!--<input type="text" class="form-control" name="username" id="username" placeholder="Username" required="" autofocus=""/>
+                <input type="password" class="form-control" name="pw" id="password" placeholder="Password" required=""/>      -->
+                <!--<label class="checkbox">
+                    <input type="checkbox" value="remember-me" id="rememberMe" name="rememberMe"/> Remember me
+                </label>-->
+                <div class="loginBtnContainer">
+                    <apex:commandButton action="{!login}" styleClass="btn btn-lg btn-primary btn-block loginBtn" value="Login" />
+                </div>
+                <div class="loginLinkContainer">
+                    <a href="/PartnerPortalForgotPassword" class="loginLink">Forgot password?</a>
+                    <a href="/PartnerPortalIndividualReg" class="loginLink">Request Access</a>
+                    <a href="mailto:partner@silver-peak.com" class="loginLink">Contact Partner Support</a>
+                </div>
+                <div style="clear:both"></div>
+            </apex:form>
+        </div>
+    </div>
+    </apex:define>
+    </apex:composition>
+</apex:page>

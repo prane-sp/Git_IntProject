@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>ProfileIncomplete</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Partner Portal Profile Incomplete</shortDescription>
+        <value>Your profile is incomplete. Please click &lt;a href=&quot;/my_profile&quot;&gt;here&lt;/a&gt; to complete your profile.</value>
+    </labels>
+</CustomLabels>
